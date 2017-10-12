@@ -1,0 +1,137 @@
+{
+    "name": "azureautomation",
+    "displayName": "AzureAutomation",
+    "description": "Work locally, against Azure Automation subscription.",
+    "version": "0.6.2",
+    "publisher": "AwesomeAutomationTeam",
+    "engines": {
+        "vscode": "^1.10.0"
+    },
+    "categories": [
+        "Other"
+    ],
+    "activationEvents": [
+        "onCommand:extension.saveDraft",
+        "onCommand:extension.createNewRunbook",
+        "onCommand:extension.publishRunbook",
+        "onCommand:extension.insertNewVariable",
+        "onCommand:extension.insertNewCredential",
+        "onCommand:extension.selectAssetVariable",
+        "onCommand:extension.selectAssetCredential",
+        "onCommand:extension.startPublishedRunbook",
+        "onCommand:extension.updatePersonalInfo",
+        "onCommand:extension.savePublishAndRun"
+    ],
+    "main": "./extension",
+    "contributes": {
+        "commands": [
+            {
+                "command": "extension.saveDraft",
+                "title": "Save Draft",
+                "category": "Azure Automation"
+            },
+            {
+                "command": "extension.createNewRunbook",
+                "title": "Create New Runbook",
+                "category": "Azure Automation"
+            },
+            {
+                "command": "extension.publishRunbook",
+                "title": "Publish",
+                "category": "Azure Automation"
+            },
+            {
+                "command": "extension.startPublishedRunbook",
+                "title": "Run",
+                "category": "Azure Automation"
+            },
+            {
+                "command": "extension.insertNewVariable",
+                "title": "Create Variable Asset",
+                "category": "Azure Automation"
+            },
+            {
+                "command": "extension.insertNewCredential",
+                "title": "Create Credential Asset",
+                "category": "Azure Automation"
+            },
+            {
+                "command": "extension.selectAssetVariable",
+                "title": "Insert Variable Asset",
+                "category": "Azure Automation"
+            },
+            {
+                "command": "extension.selectAssetCredential",
+                "title": "Insert Credential Asset",
+                "category": "Azure Automation"
+            },
+            {
+                "command": "extension.updatePersonalInfo",
+                "title": "Update Personal information",
+                "category": "Azure Automation"
+            },
+            {
+                "command": "extension.savePublishAndRun",
+                "title": "Publish and Run",
+                "category": "Azure Automation"
+            }
+        ],
+        "configuration": {
+            "title": "Azure Automation configuration",
+            "properties": {
+                "azureautomation.clientId": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Client ID for your AAD App"
+                },
+                "azureautomation.clientSecret": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Client secret for your AAD App"
+                },
+                "azureautomation.subscriptionId": {
+                    "type": "string",
+                    "default": "",
+                    "description": "ID of your subscription."
+                },
+                "azureautomation.resourceGroups": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Name of the resource group your automation account resides in."
+                },
+                "azureautomation.automationAccount": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Name of the automation account you're working against"
+                },
+                "azureautomation.apiVersion": {
+                    "type": "string",
+                    "default": "2015-10-31",
+                    "description": "API Version used by Azure REST API"
+                },
+                "azureautomation.templateName": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Name of your template in the automation account"
+                }
+            }
+        }
+    },
+    "scripts": {
+        "postinstall": "node ./node_modules/vscode/bin/install",
+        "test": "node ./node_modules/vscode/bin/test"
+    },
+    "devDependencies": {
+        "typescript": "^2.0.3",
+        "vscode": "^1.0.0",
+        "mocha": "^2.3.3",
+        "eslint": "^3.6.0",
+        "@types/node": "^6.0.40",
+        "@types/mocha": "^2.2.32"
+    },
+    "dependencies": {
+        "lodash": "^4.17.4",
+        "q": "^1.5.0",
+        "request": "^2.81.0"
+    }
+}

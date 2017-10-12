@@ -1,0 +1,15 @@
+{
+  "AzureConfig": {
+    "clientId": "",
+    "clientSecret": "",
+    "subscriptionId": "",
+    "resourceGroups": "",
+    "automationAccount": "",
+    "apiVersion": "2015-10-31",
+    "templateName": ""
+  },
+  "PersonalInfo": {
+    "name": "Morten",
+    "mail": "morten"
+  }
+}
