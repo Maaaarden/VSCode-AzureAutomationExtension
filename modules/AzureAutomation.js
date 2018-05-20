@@ -317,20 +317,6 @@ function createGuid () {
   })
 }
 
-
-const editAzureConfig = function (name, mail, next) {
-  const fs = require('fs')
-  const Config = require('./AzureConfig.js')
-  const configFilePath = new Config().filePath
-
-  let configContent = JSON.parse(fs.readFileSync(configFilePath, 'utf8'))
-  configContent.PersonalInfo = {}
-  configContent.PersonalInfo.name = name
-  configContent.PersonalInfo.mail = mail
-  fs.writeFileSync(configFilePath, JSON.stringify(configContent, null, 2))
-  next()
-}
-
 module.exports = {
   getOauthToken: getOauthToken,
   getListOfRunbooks: getListOfRunbooks,
