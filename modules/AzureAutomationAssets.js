@@ -1,5 +1,6 @@
 var newAssetVariable = function (token) {
   var vscode = require('vscode')
+  var azureconfig = vscode.workspace.getConfiguration("azureautomation")
   var stringSnip = ''
 
   var assetName = ''
@@ -24,8 +25,13 @@ var newAssetVariable = function (token) {
       .then(val3 => {
         assetDescription = val3
         createAzureVariable(assetName, assetValue, assetDescription, token, function () {
-          stringSnip = '\\$containerVariable = Get-AutomationVariable -Name \'' + assetName + '\'\n'
-          stringSnip += '\\$${1:var} = Get-AutomationVariable -Name \\$containerVariable\n'
+          if(azureconfig.dualVars) {
+            stringSnip += '\\$containerVariable = Get-AutomationVariable -Name \'' + assetName + '\'\n'
+            stringSnip += '\\$${1:var} = Get-AutomationVariable -Name \\$containerVariable\n'
+          } else {
+            stringSnip += '\\$${1:var} = Get-AutomationVariable -Name \'' + assetName + '\'\n'
+          }
+          
           stringSnip += '\n'
           stringSnip += '${0:}'
           vscode.window.activeTextEditor.insertSnippet(new vscode.SnippetString(stringSnip))
@@ -37,6 +43,7 @@ var newAssetVariable = function (token) {
 
 var newAssetCredential = function (token) {
   var vscode = require('vscode')
+  var azureconfig = vscode.workspace.getConfiguration("azureautomation")
   var stringSnip = ''
 
   var assetName = ''
@@ -69,8 +76,12 @@ var newAssetCredential = function (token) {
         .then(val4 => {
           assetDescription = val4
           createAzureCredential(assetName, assetUserName, assetPassword, assetDescription, token, function () {
-            stringSnip = '\\$containerVariable = Get-AutomationVariable -Name \'' + assetName + '\'\n'
-            stringSnip += '\\$${1:cred} = Get-AutomationPSCredential -Name \\$containerVariable\n'
+            if(azureconfig.dualVars) {
+              stringSnip = '\\$containerVariable = Get-AutomationVariable -Name \'' + assetName + '\'\n'
+              stringSnip += '\\$${1:var} = Get-AutomationPSCredential -Name \\$containerVariable\n'
+            } else {
+              stringSnip = '\\$${1:var} = Get-AutomationpPSCredential -Name \'' + assetName + '\'\n'
+            }
             stringSnip += '\n'
             stringSnip += '${0:}'
             vscode.window.activeTextEditor.insertSnippet(new vscode.SnippetString(stringSnip))
@@ -85,6 +96,7 @@ var selectAssetVariable = function (token) {
   var request = require('request')
   var vscode = require('vscode')
   var _ = require('lodash')
+  var stringSnip = ''
   var azureconfig = vscode.workspace.getConfiguration("azureautomation")
   var hest = ''
   getAssets(token, function (assets) {
@@ -93,8 +105,12 @@ var selectAssetVariable = function (token) {
     .then(function (hest) {
       var assetName = (hest.label).replace('Variable: ', '')
 
-      let stringSnip = '\\$containerVariable = Get-AutomationVariable -Name \'' + assetName + '\'\n'
-      stringSnip += '\\$${1:var} = Get-AutomationVariable -Name \\$containerVariable\n'
+      if(azureconfig.dualVars) {
+        stringSnip += '\\$containerVariable = Get-AutomationVariable -Name \'' + assetName + '\'\n'
+        stringSnip += '\\$${1:var} = Get-AutomationVariable -Name \\$containerVariable\n'
+      } else {
+        stringSnip += '\\$${1:var} = Get-AutomationVariable -Name \'' + assetName + '\'\n'
+      }
       stringSnip += '\n'
       stringSnip += '${0:}'
       vscode.window.activeTextEditor.insertSnippet(new vscode.SnippetString(stringSnip))
@@ -123,30 +139,37 @@ function getAssets (token, next) {
       _.forEach(bodyParsed.value, function (value) {
         var reg = '[a-zA-Z]*_[0-9]{8}'
         var pattern = new RegExp(reg, 'g')
-        if (!pattern.test(value.name)) {
-          if (!value.properties.isEncrypted === true) {
-            var vals = value.properties.value
-            vals = vals.substring(1, vals.length - 1)
-            var asset = _.filter(bodyParsed.value, {'name': vals})
-            if (asset[0]) {
-              var assetValue = ''
-              if (asset[0].properties.isEncrypted === true) {
-                assetValue = 'Enctrypted value'
-              } else {
-                assetValue = (asset[0].properties.value).substring(1, (asset[0].properties.value).length - 1)
+
+        if(azureconfig.dualVars) {
+          if (!pattern.test(value.name)) {
+            if (!value.properties.isEncrypted === true) {
+              var vals = value.properties.value
+              vals = vals.substring(1, vals.length - 1)
+              var asset = _.filter(bodyParsed.value, {'name': vals})
+              if (asset[0]) {
+                var assetValue = ''
+                if (asset[0].properties.isEncrypted === true) {
+                  assetValue = 'Enctrypted value'
+                } else {
+                  assetValue = (asset[0].properties.value).substring(1, (asset[0].properties.value).length - 1)
+                }
+                var test = {
+                  'description': asset[0].properties.description,
+                  'detail': 'Value: ' + assetValue,
+                  'label': 'Variable: ' + value.name
+                }
+                returnAssets.push(test)
               }
-              var test = {
-                'description': asset[0].properties.description,
-                // 'description': value.description,
-                'detail': 'Value: ' + assetValue,
-                'label': 'Variable: ' + value.name
-              }
-              returnAssets.push(test)
             }
-            // returnValues.push((asset[0].properties.value).substring(1, (asset[0].properties.value).length - 1))
-            // returnAssets[value.name] = (asset[0].properties.value).substring(1, (asset[0].properties.value).length - 1)
-            // console.log('Assetname: ' + value.name)
-            // console.log('Asset value: ' + (asset[0].properties.value).substring(1, (asset[0].properties.value).length - 1))
+          }
+        } else {
+          if (!value.properties.isEncrypted === true) {
+            var test = {
+              'description': value.properties.description,
+              'detail': 'Value: ' + value.properties.value,
+              'label': 'Variable: ' + value.name
+            }
+            returnAssets.push(test)
           }
         }
       })
@@ -161,13 +184,18 @@ var selectAssetCredential = function (token) {
   var _ = require('lodash')
   var azureconfig = vscode.workspace.getConfiguration("azureautomation")
   var hest2 = ''
+  var stringSnip = ''
   getCredentials(token, function (returnCredentials) {
     vscode.window.showQuickPick(returnCredentials)
     .then(val => hest2 = val)
     .then(function (hest2) {
       var assetName = (hest2.label).replace('Credential: ', '')
-      let stringSnip = '\\$containerVariable = Get-AutomationVariable -Name \'' + assetName + '\'\n'
-      stringSnip += '\\$${1:var} = Get-AutomationPSCredential -Name \\$containerVariable\n'
+      if(azureconfig.dualVars) {
+        stringSnip = '\\$containerVariable = Get-AutomationVariable -Name \'' + assetName + '\'\n'
+        stringSnip += '\\$${1:var} = Get-AutomationPSCredential -Name \\$containerVariable\n'
+      } else {
+        stringSnip = '\\$${1:var} = Get-AutomationPSCredential -Name \'' + assetName + '\'\n'
+      }
       stringSnip += '\n'
       stringSnip += '${0:}'
       vscode.window.activeTextEditor.insertSnippet(new vscode.SnippetString(stringSnip))
@@ -190,8 +218,21 @@ function getCredentials (token, next) {
     if (error) {
 
     } else if (response.statusCode === 200) {
+      var returnCredentials = []
       var bodyParsed = JSON.parse(body)
-      getCredentialInfo(token, next, bodyParsed)
+      if(azureconfig.dualVars) {
+        getCredentialInfo(token, next, bodyParsed)
+      } else {
+        _.forEach(bodyParsed.value, function (value) {
+          var test = {
+            'description': value.properties.description,
+            'detail': 'Username: ' + value.properties.userName,
+            'label': 'Credential: ' + value.name
+          }
+          returnCredentials.push(test)
+        })
+        next(returnCredentials)
+      }
     }
   })
 }
@@ -256,6 +297,10 @@ function createAzureVariable (assetName, assetValue, assetDescription, token, ne
   var year = dateObj.getUTCFullYear()
   var assetNameDate = assetName + '_' + date + month + year
 
+  if(!azureconfig.dualVars) {
+    assetNameDate = assetValue
+  }
+
   request.put({
     url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroups}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/variables/${assetName}?api-version=${azureconfig.apiVersion}`,
     headers: {
@@ -273,29 +318,34 @@ function createAzureVariable (assetName, assetValue, assetDescription, token, ne
     if (error) {
       vscode.window.showErrorMessage('Error creating your asset in Azure.')
     } else if (response.statusCode === 201) {
+      if(!azureconfig.dualVars) {
+        next()
+      }
     }
   })
 
-  request.put({
-    url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroups}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/variables/${assetNameDate}?api-version=${azureconfig.apiVersion}`,
-    headers: {
-      'Authorization': token
-    },
-    json: {
-      'properties': {
-        'description': '',
-        'isEncrypted': 0,
-        'type': 'string',
-        'value': '"' + assetValue + '"'
+  if(azureconfig.dualVars) {
+    request.put({
+      url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroups}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/variables/${assetNameDate}?api-version=${azureconfig.apiVersion}`,
+      headers: {
+        'Authorization': token
+      },
+      json: {
+        'properties': {
+          'description': '',
+          'isEncrypted': 0,
+          'type': 'string',
+          'value': '"' + assetValue + '"'
+        }
       }
-    }
-  }, function (error, response, body) {
-    if (error) {
-      vscode.window.showErrorMessage('Error creating your asset in Azure.')
-    } else if (response.statusCode === 201) {
-      next()
-    }
-  })
+    }, function (error, response, body) {
+      if (error) {
+        vscode.window.showErrorMessage('Error creating your asset in Azure.')
+      } else if (response.statusCode === 201) {
+        next()
+      }
+    })
+  }
 }
 
 function createAzureCredential (assetName, assetUserName, assetPassword, assetDescription, token, next) {
@@ -316,25 +366,31 @@ function createAzureCredential (assetName, assetUserName, assetPassword, assetDe
 
   var assetNameDate = assetName + '_' + date + month + year
 
-  request.put({
-    url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroups}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/variables/${assetName}?api-version=${azureconfig.apiVersion}`,
-    headers: {
-      'Authorization': token
-    },
-    json: {
-      'properties': {
-        'description': assetDescription,
-        'isEncrypted': 0,
-        'type': 'string',
-        'value': '"' + assetNameDate + '"'
-      }
-    }
-  }, function (error, response, body) {
-    if (error) {
-      vscode.window.showErrorMessage('Error creating your asset in Azure.')
-    }
-  })
+  if(!azureconfig.dualVars) {
+    assetNameDate = assetName
+  }
 
+  if(azureconfig.dualVars) {
+    request.put({
+      url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroups}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/variables/${assetName}?api-version=${azureconfig.apiVersion}`,
+      headers: {
+        'Authorization': token
+      },
+      json: {
+        'properties': {
+          'description': assetDescription,
+          'isEncrypted': 0,
+          'type': 'string',
+          'value': '"' + assetNameDate + '"'
+        }
+      }
+    }, function (error, response, body) {
+      if (error) {
+        vscode.window.showErrorMessage('Error creating your asset in Azure.')
+      }
+    })
+  }
+  
   request.put({
     url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroups}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/credentials/${assetNameDate}?api-version=${azureconfig.apiVersion}`,
     headers: {

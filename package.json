@@ -2,7 +2,7 @@
     "name": "azureautomation",
     "displayName": "AzureAutomation",
     "description": "Work locally, against Azure Automation subscription.",
-    "version": "0.6.2",
+    "version": "0.6.3",
     "publisher": "AwesomeAutomationTeam",
     "engines": {
         "vscode": "^1.10.0"
@@ -112,7 +112,12 @@
                 "azureautomation.templateName": {
                     "type": "string",
                     "default": "",
-                    "description": "Name of your template in the automation account"
+                    "description": "Name of your template in the automation account (Leave blank if you don't use a template)"
+                },
+                "azureautomation.dualVars": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Make use of double variable+credential notation as early versions, or single variable notation (If set to 'false' only one variable or credential is used)"
                 }
             }
         }
