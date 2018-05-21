@@ -11,7 +11,7 @@ NEW: Make sure to update all the settings under 'Azure Automation configuration'
 
 
 ## Functions
- - Create Runbook (Using a template)
+ - Create Runbook (Using a template/or from scratch)
  - Save Draft
  - Publish
  - Publish and Run
@@ -32,16 +32,15 @@ This extension was made with specific use inside my organisation for eye. A few 
 Feedback on this functionality is more than welcome - as is changes to this, to support a broader usecase.
 Below is a list of the functions, and a description of the usecase and way it has been coded.
 
-### Update Personal Information
-This is made to ensure that we get mail and name of person creating a runbook. We add these as tags to the runbook on creation.
-
 ### Create Runbook
-We make use of a predefined runbook template, and thus this is made to fetch the content of this, to put as content when you create new runbook.
-Name of the runbook is defined in the 'azureconfig.json' file inside the extension folder.
+Create a new runbook in your defined Azure Automation account.
+Support for a template is possible. Under 'User Settings' just input the name of your template runbook, and any new runbook created through this extension, will be prefilled with the same content as that template runbook.
+If you leave the name blank, a blank runbook will be created.
 
 ### Create new Azure variable / credential asset
-We make use of a 2-part setup for our variables. Thus creating 2 variables in Azure, with the use of these functions.
-Inserting code to runbook with support for this.
+Create a new variable or credential asset.
+Based on the 'DualVars' setting, this will either create 1 or 2 assets. Insterting code into your runbook automatically
 
 ### Insert Azure variable / credential asset
-Again, making use of the 2-part setup for variables. Inserting code to support for this.
+Insert an existing variable or credential asset.
+Based on the 'DualVars' setting, this will either use 1 or 2 assets. Insterting code into your runbook automatically
