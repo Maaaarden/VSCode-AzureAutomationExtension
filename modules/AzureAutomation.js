@@ -186,31 +186,47 @@ var createLocalRunbook = function (runbookName, next) {
   if (!hasWorkspace) {
     return vscode.window.showErrorMessage('No workspace found. Please open a folder before creating a new Runbook.')
   }
-  getOauthToken(function (token) {
-    request.get({
-      url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroups}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/runbooks/${azureconfig.templateName}/content?api-version=${azureconfig.apiVersion}`,
-      headers: {
-        'Authorization': token.value
-      }
-    }, function (error, response, body) {
-      if (error) {
-        console.log(error)
-        return vscode.window.showErrorMessage('Could not get template from Azure Cloud.')
-      }
-      var path = vscode.workspace.rootPath + `\\${runbookName}.ps1`
-      Q.fcall(function () {
-        fs.writeFile(path, body)
-      })
-      .then(function () {
-        vscode.workspace.openTextDocument(path).then(doc => {
-          vscode.window.showTextDocument(doc)
-          setTimeout(function () {
-            next()
-          }, 2000)
+
+  if (azureconfig.templateName != "") {
+    getOauthToken(function (token) {
+      request.get({
+        url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroups}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/runbooks/${azureconfig.templateName}/content?api-version=${azureconfig.apiVersion}`,
+        headers: {
+          'Authorization': token.value
+        }
+      }, function (error, response, body) {
+        if (error) {
+          console.log(error)
+          return vscode.window.showErrorMessage('Could not get template from Azure Cloud.')
+        }
+        var path = vscode.workspace.rootPath + `\\${runbookName}.ps1`
+        Q.fcall(function () {
+          fs.writeFile(path, body)
+        })
+        .then(function () {
+          vscode.workspace.openTextDocument(path).then(doc => {
+            vscode.window.showTextDocument(doc)
+            setTimeout(function () {
+              next()
+            }, 2000)
+          })
         })
       })
     })
-  })
+  } else {
+    var path = vscode.workspace.rootPath + `\\${runbookName}.ps1`
+    Q.fcall(function () {
+      fs.writeFile(path, "")
+    })
+    .then(function () {
+      vscode.workspace.openTextDocument(path).then(doc => {
+        vscode.window.showTextDocument(doc)
+        setTimeout(function () {
+          next()
+        }, 2000)
+      })
+    })
+  }
 }
 
 var publishRunbook = function (next) {
