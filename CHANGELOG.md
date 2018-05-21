@@ -1,6 +1,12 @@
 # Change Log
 All notable changes to the "azureautomation" extension will be documented in this file.
 
+## [0.6.3] - 2018-05-21
+### Changed
+ - Added configuration option for 'DualVars' notation
+    Change the value of 'dualVars' under configuration to 'false', to make the extension only make use of 1 variable/credential
+ - Added code to support for both dual and single var notation
+
 ## [0.6.2] - 2017-09-20
 ### Fixed
  - Fixed a bug, where creation of variables / credentials didn't work.
