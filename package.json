@@ -116,8 +116,8 @@
                 },
                 "azureautomation.dualVars": {
                     "type": "boolean",
-                    "default": false,
-                    "description": "Make use of double variable+credential notation as early versions, or single variable notation"
+                    "default": true,
+                    "description": "Make use of double variable+credential notation as early versions, or single variable notation (If set to 'false' only one variable or credential is used)"
                 }
             }
         }
