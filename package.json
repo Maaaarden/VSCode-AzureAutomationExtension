@@ -110,7 +110,7 @@
                 },
                 "azureautomation.apiVersion": {
                     "type": "string",
-                    "default": "2015-10-31",
+                    "default": "2018-01-15",
                     "description": "API Version used by Azure REST API"
                 },
                 "azureautomation.templateName": {

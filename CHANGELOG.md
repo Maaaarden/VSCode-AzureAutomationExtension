@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to the "azureautomation" extension will be documented in this file.
 
+## [0.6.5] - 2018-05-23
+### Changed
+ - Added support for 'Integer' and 'Boolean' variable types
+
 ## [0.6.4] - 2018-05-21
 ### Changed
  - Added configuration option for 'DualVars' notation
