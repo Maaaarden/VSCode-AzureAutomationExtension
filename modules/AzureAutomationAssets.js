@@ -6,35 +6,47 @@ var newAssetVariable = function (token) {
   var assetName = ''
   var assetValue = ''
   var assetDescription = ''
-  vscode.window.showInputBox({
-    prompt: 'What should be the name of your variable?',
-    ignoreFocusOut: true
-  })
+  var assetType = ''
+
+  vscode.window.showQuickPick(['String', 'Integer', 'Boolean'], { placeHolder: 'What type of variable to you want?' })
   .then(val => {
-    assetName = val
+    assetType = val
     vscode.window.showInputBox({
-      prompt: 'What should be the value of your variable?',
+      prompt: 'What should be the name of your variable?',
       ignoreFocusOut: true
     })
-    .then(val2 => {
-      assetValue = val2
-      vscode.window.showInputBox({
-        prompt: 'Please describe this asset for future references.',
-        ignoreFocusOut: true
+    .then( val2 => {
+      assetName = val2
+      var boolPromise = new Promise(function(resolve, reject){
+        if(assetType === 'Boolean') {
+          resolve(vscode.window.showQuickPick(['True', 'False'], {placeHolder: 'True or False?'}))
+        } else {
+          resolve(vscode.window.showInputBox({
+            prompt: 'What should be the value of your variable?',
+            ignoreFocusOut: true
+          }))
+        }
       })
       .then(val3 => {
-        assetDescription = val3
-        createAzureVariable(assetName, assetValue, assetDescription, token, function () {
-          if(azureconfig.dualVars) {
-            stringSnip += '\\$containerVariable = Get-AutomationVariable -Name \'' + assetName + '\'\n'
-            stringSnip += '\\$${1:var} = Get-AutomationVariable -Name \\$containerVariable\n'
-          } else {
-            stringSnip += '\\$${1:var} = Get-AutomationVariable -Name \'' + assetName + '\'\n'
-          }
-          
-          stringSnip += '\n'
-          stringSnip += '${0:}'
-          vscode.window.activeTextEditor.insertSnippet(new vscode.SnippetString(stringSnip))
+        assetValue = val3
+        vscode.window.showInputBox({
+          prompt: 'Please describe this asset for future references.',
+          ignoreFocusOut: true
+        })
+        .then(val4 => {
+          assetDescription = val4
+          createAzureVariable(assetType, assetName, assetValue, assetDescription, token, function () {
+            if(azureconfig.dualVars) {
+              stringSnip += '\\$containerVariable = Get-AutomationVariable -Name \'' + assetName + '\'\n'
+              stringSnip += '\\$${1:var} = Get-AutomationVariable -Name \\$containerVariable\n'
+            } else {
+              stringSnip += '\\$${1:var} = Get-AutomationVariable -Name \'' + assetName + '\'\n'
+            }
+            
+            stringSnip += '\n'
+            stringSnip += '${0:}'
+            vscode.window.activeTextEditor.insertSnippet(new vscode.SnippetString(stringSnip))
+          })
         })
       })
     })
@@ -279,7 +291,7 @@ function getCredentialInfo (token, next, credList) {
   })
 }
 
-function createAzureVariable (assetName, assetValue, assetDescription, token, next) {
+function createAzureVariable (assetType, assetName, assetValue, assetDescription, token, next) {
   var request = require('request')
   var vscode = require('vscode')
   var azureconfig = vscode.workspace.getConfiguration("azureautomation")
@@ -295,12 +307,33 @@ function createAzureVariable (assetName, assetValue, assetDescription, token, ne
     date = '0' + date
   }
   var year = dateObj.getUTCFullYear()
-  var assetNameDate = assetName + '_' + date + month + year
+  var assetNameDate = '"' + assetName + '_' + date + month + year + '"'
+  var assetType1 = ''
+  var assetType2 = ''
+
+  if(assetType === 'Integer') {
+    assetValue = parseInt(assetValue)
+    assetType = assetType.toLowerCase()
+  } else if(assetType === 'Boolean') {
+    if(assetValue === 'True') {
+      assetValue = 'true'
+    } else {
+      assetValue = 'false'
+    }
+    assetType = assetType.toLowerCase()
+  } else {
+    assetValue = '"' + assetValue + '"'
+  }
 
   if(!azureconfig.dualVars) {
     assetNameDate = assetValue
+    assetType1 = assetType
+  } else {
+    assetType1 = 'string'
+    assetType2 = assetType.toLowerCase()
   }
-
+  // Look here for error solving!!!
+  
   request.put({
     url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroups}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/variables/${assetName}?api-version=${azureconfig.apiVersion}`,
     headers: {
@@ -310,8 +343,8 @@ function createAzureVariable (assetName, assetValue, assetDescription, token, ne
       'properties': {
         'description': assetDescription,
         'isEncrypted': 0,
-        'type': 'string',
-        'value': '"' + assetNameDate + '"'
+        'type': '"' + assetType1 + '"',
+        'value': assetNameDate
       }
     }
   }, function (error, response, body) {
@@ -321,6 +354,8 @@ function createAzureVariable (assetName, assetValue, assetDescription, token, ne
       if(!azureconfig.dualVars) {
         next()
       }
+    } else {
+      console.log(body)
     }
   })
 
@@ -334,8 +369,8 @@ function createAzureVariable (assetName, assetValue, assetDescription, token, ne
         'properties': {
           'description': '',
           'isEncrypted': 0,
-          'type': 'string',
-          'value': '"' + assetValue + '"'
+          'type': '"' + assetType2 + '"',
+          'value': assetValue
         }
       }
     }, function (error, response, body) {
