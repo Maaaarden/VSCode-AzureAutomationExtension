@@ -27,7 +27,7 @@ Create a new runbook in your defined Azure Automation account.
 Support for a template is possible. Under 'User Settings' just input the name of your template runbook, and any new runbook created through this extension, will be prefilled with the same content as that template runbook.
 If you leave the name blank, a blank runbook will be created.
 
-### Save draf
+### Save draft
 Save a draft copy to the automation account
 
 ### Publish
