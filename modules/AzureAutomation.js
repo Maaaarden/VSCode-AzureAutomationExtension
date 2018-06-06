@@ -279,38 +279,67 @@ var startPublishedRunbook = function (token, next) {
     vscode.window.showQuickPick(hybridWorkers)
     .then(val => runOn = val)
     .then(function (runOn) {
-      request.put({
-        url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroups}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/jobs/${guid}?api-version=${azureconfig.apiVersion}`,
-        headers: {
-          'Authorization': token
-        },
-        json: {
-          'properties': {
-            'runbook': {
-              'name': '' + runbookName + ''
-            },
-            'parameters': { // Parameters of current open runbook.
-              'Name': 'Scarlett',
-              'Number': 77,
-              'SayGoodbye': 'true'
-            },
-            'runOn': runOn.detail
+      if(runOn.detail) {
+        request.put({
+          url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroups}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/jobs/${guid}?api-version=${azureconfig.apiVersion}`,
+          headers: {
+            'Authorization': token
+          },
+          json: {
+            'properties': {
+              'runbook': {
+                'name': '' + runbookName + ''
+              },
+              'parameters': { // Parameters of current open runbook.
+              },
+              'runOn': runOn.detail
+            }
           }
-        }
-      }, function (error, response, body) {
-        if (response.statusCode === 404 || error) {
-          console.log(response)
-          vscode.window.showErrorMessage('Something went wrong, when trying to start the job.')
-        }
-        if (response.statusCode === 201) {
-          // setTimeout(function () {
-          return next(guid)
-          // }, 10000)
-        }
-        if (response.statusCode === 200) {
-          vscode.window.showInformationMessage('Job already running. Usually this means a mishap in the code.')
-        }
-      })
+        }, function (error, response, body) {
+          if (response.statusCode === 404 || error) {
+            console.log(response)
+            vscode.window.showErrorMessage('Something went wrong, when trying to start the job.')
+          }
+          if (response.statusCode === 201) {
+            // setTimeout(function () {
+            return next(guid)
+            // }, 10000)
+          }
+          if (response.statusCode === 200) {
+            vscode.window.showInformationMessage('Job already running. Usually this means a mishap in the code.')
+          }
+        })
+      } else {
+        request.put({
+          url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroups}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/jobs/${guid}?api-version=${azureconfig.apiVersion}`,
+          headers: {
+            'Authorization': token
+          },
+          json: {
+            'properties': {
+              'runbook': {
+                'name': '' + runbookName + ''
+              },
+              'parameters': { // Parameters of current open runbook.
+              }
+            }
+          }
+        }, function (error, response, body) {
+          if (response.statusCode === 404 || error) {
+            console.log(response)
+            vscode.window.showErrorMessage('Something went wrong, when trying to start the job.')
+          }
+          if (response.statusCode === 201) {
+            // setTimeout(function () {
+            return next(guid)
+            // }, 10000)
+          }
+          if (response.statusCode === 200) {
+            vscode.window.showInformationMessage('Job already running. Usually this means a mishap in the code.')
+          }
+        })
+      }
+      
     })
   })
 }
