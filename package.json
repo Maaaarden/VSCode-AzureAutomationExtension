@@ -2,7 +2,7 @@
     "name": "azureautomation",
     "displayName": "AzureAutomation",
     "description": "Work locally, against Azure Automation subscription.",
-    "version": "0.6.4",
+    "version": "0.6.6",
     "publisher": "AwesomeAutomationTeam",
     "engines": {
         "vscode": "^1.10.0"
@@ -24,7 +24,8 @@
         "onCommand:extension.selectAssetCredential",
         "onCommand:extension.startPublishedRunbook",
         "onCommand:extension.updatePersonalInfo",
-        "onCommand:extension.savePublishAndRun"
+        "onCommand:extension.savePublishAndRun",
+        "onCommand:extension.openRunbookFromAzure"
     ],
     "main": "./extension",
     "contributes": {
@@ -77,6 +78,11 @@
             {
                 "command": "extension.savePublishAndRun",
                 "title": "Publish and Run",
+                "category": "Azure Automation"
+            },
+            {
+                "command": "extension.openRunbookFromAzure",
+                "title": "Open runbook from Azure",
                 "category": "Azure Automation"
             }
         ],

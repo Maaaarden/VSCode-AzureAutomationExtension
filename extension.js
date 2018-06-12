@@ -84,6 +84,14 @@ function activateCommands (context) {
   )
   context.subscriptions.push(savePublishRunDisposable)
 
+  var openRunbookFromAzureDisposable = vscode.commands.registerCommand(
+    'extension.openRunbookFromAzure', function () {
+      Controller.openRunbookFromAzure(() => {
+
+      })
+    }
+  )
+  context.subscriptions.push(openRunbookFromAzureDisposable)
 }
 
 // this method is called when your extension is activated

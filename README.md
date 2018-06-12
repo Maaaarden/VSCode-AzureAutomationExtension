@@ -13,6 +13,7 @@ NEW: Make sure to update all the settings under 'Azure Automation configuration'
 A list of the functionality available in this extension
 
  - Create Runbook (Using a template/or from scratch)
+ - Open existing runbook
  - Save Draft
  - Publish
  - Publish and Run
@@ -26,6 +27,9 @@ A list of the functionality available in this extension
 Create a new runbook in your defined Azure Automation account.
 Support for a template is possible. Under 'User Settings' just input the name of your template runbook, and any new runbook created through this extension, will be prefilled with the same content as that template runbook.
 If you leave the name blank, a blank runbook will be created.
+
+### Open existing runbook
+It is now posible to open a runbook already in your Automation Account, and start working on it inside VS Code.
 
 ### Save draft
 Save a draft copy to the automation account

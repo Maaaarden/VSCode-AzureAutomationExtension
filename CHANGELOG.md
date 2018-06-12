@@ -1,6 +1,13 @@
 # Change Log
 All notable changes to the "azureautomation" extension will be documented in this file.
 
+## [0.6.6] - 2018-06-12
+### Added
+ - Added 'Open runbook from azure' functionality
+
+### Fixed
+ - Fixed problem when executing runbook on Azure, with no HybridWorkers on automation account
+
 ## [0.6.5] - 2018-05-23
 ### Changed
  - Added support for 'Integer' and 'Boolean' variable types

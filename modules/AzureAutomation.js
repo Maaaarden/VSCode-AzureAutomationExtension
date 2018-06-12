@@ -175,7 +175,7 @@ var createAzureRunbook = function (next) {
  * @param   {String}    runbookName The name of the runbook you wish to create.
  * @param   {Function}  next        Callback function
  */
-var createLocalRunbook = function (runbookName, next) {
+var createLocalRunbook = function (runbookName, existing=false, next) {
   var vscode = require('vscode')
   var request = require('request')
   var azureconfig = vscode.workspace.getConfiguration("azureautomation")
@@ -187,7 +187,34 @@ var createLocalRunbook = function (runbookName, next) {
     return vscode.window.showErrorMessage('No workspace found. Please open a folder before creating a new Runbook.')
   }
 
-  if (azureconfig.templateName != "") {
+  if (existing) {
+    getOauthToken(function (token) {
+      request.get({
+        url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroups}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/runbooks/${runbookName}/content?api-version=${azureconfig.apiVersion}`,
+        headers: {
+          'Authorization': token.value
+        }
+      }, function (error, response, body) {
+        if (error) {
+          console.log(error)
+          return vscode.window.showErrorMessage('Could not get runbook from Azure Cloud.')
+        }
+        var path = vscode.workspace.rootPath + `\\${runbookName}.ps1`
+        Q.fcall(function () {
+          fs.writeFile(path, body)
+        })
+        .then(function () {
+          vscode.workspace.openTextDocument(path).then(doc => {
+            vscode.window.showTextDocument(doc)
+            setTimeout(function () {
+              next()
+            }, 2000)
+          })
+        })
+      })
+    })
+  }
+  else if (azureconfig.templateName != "") {
     getOauthToken(function (token) {
       request.get({
         url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroups}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/runbooks/${azureconfig.templateName}/content?api-version=${azureconfig.apiVersion}`,
