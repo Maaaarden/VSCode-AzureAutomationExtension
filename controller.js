@@ -30,7 +30,7 @@ const createNewRunbook = function () {
   .then(runbookName => {
     Azure.doesRunbookExist(runbookName, function (runbookExist) {
       if (!runbookExist) {
-        Azure.createLocalRunbook(runbookName, function () {
+        Azure.createLocalRunbook(runbookName, undefined, function () {
           Azure.createAzureRunbook(function () {
             Azure.saveAsDraft(function () {
             })
@@ -39,6 +39,20 @@ const createNewRunbook = function () {
       } else {
         vscode.window.showErrorMessage('The provided Runbook name already exists in Azure Cloud')
       }
+    })
+  })
+}
+
+const openRunbookFromAzure = function () {
+  Azure.getListOfRunbooks( function (runbookList) {
+    vscode.window.showQuickPick(runbookList)
+    .then(runbookName => {
+      Azure.doesRunbookExist(runbookName, function (runbookExist) {
+        if(runbookExist) {
+          Azure.createLocalRunbook(runbookName, true, function () {
+          })
+        }
+      })
     })
   })
 }
@@ -88,5 +102,6 @@ module.exports = {
   insertNewCredential: insertNewCredential,
   selectAssetVariable: selectAssetVariable,
   startPublishedRunbook: startPublishedRunbook,
-  selectAssetCredential: selectAssetCredential
+  selectAssetCredential: selectAssetCredential,
+  openRunbookFromAzure: openRunbookFromAzure
 }

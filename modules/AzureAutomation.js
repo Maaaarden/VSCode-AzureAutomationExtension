@@ -175,7 +175,7 @@ var createAzureRunbook = function (next) {
  * @param   {String}    runbookName The name of the runbook you wish to create.
  * @param   {Function}  next        Callback function
  */
-var createLocalRunbook = function (runbookName, next) {
+var createLocalRunbook = function (runbookName, existing=false, next) {
   var vscode = require('vscode')
   var request = require('request')
   var azureconfig = vscode.workspace.getConfiguration("azureautomation")
@@ -187,7 +187,34 @@ var createLocalRunbook = function (runbookName, next) {
     return vscode.window.showErrorMessage('No workspace found. Please open a folder before creating a new Runbook.')
   }
 
-  if (azureconfig.templateName != "") {
+  if (existing) {
+    getOauthToken(function (token) {
+      request.get({
+        url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroups}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/runbooks/${runbookName}/content?api-version=${azureconfig.apiVersion}`,
+        headers: {
+          'Authorization': token.value
+        }
+      }, function (error, response, body) {
+        if (error) {
+          console.log(error)
+          return vscode.window.showErrorMessage('Could not get runbook from Azure Cloud.')
+        }
+        var path = vscode.workspace.rootPath + `\\${runbookName}.ps1`
+        Q.fcall(function () {
+          fs.writeFile(path, body)
+        })
+        .then(function () {
+          vscode.workspace.openTextDocument(path).then(doc => {
+            vscode.window.showTextDocument(doc)
+            setTimeout(function () {
+              next()
+            }, 2000)
+          })
+        })
+      })
+    })
+  }
+  else if (azureconfig.templateName != "") {
     getOauthToken(function (token) {
       request.get({
         url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroups}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/runbooks/${azureconfig.templateName}/content?api-version=${azureconfig.apiVersion}`,
@@ -279,38 +306,67 @@ var startPublishedRunbook = function (token, next) {
     vscode.window.showQuickPick(hybridWorkers)
     .then(val => runOn = val)
     .then(function (runOn) {
-      request.put({
-        url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroups}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/jobs/${guid}?api-version=${azureconfig.apiVersion}`,
-        headers: {
-          'Authorization': token
-        },
-        json: {
-          'properties': {
-            'runbook': {
-              'name': '' + runbookName + ''
-            },
-            'parameters': { // Parameters of current open runbook.
-              'Name': 'Scarlett',
-              'Number': 77,
-              'SayGoodbye': 'true'
-            },
-            'runOn': runOn.detail
+      if(runOn.detail) {
+        request.put({
+          url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroups}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/jobs/${guid}?api-version=${azureconfig.apiVersion}`,
+          headers: {
+            'Authorization': token
+          },
+          json: {
+            'properties': {
+              'runbook': {
+                'name': '' + runbookName + ''
+              },
+              'parameters': { // Parameters of current open runbook.
+              },
+              'runOn': runOn.detail
+            }
           }
-        }
-      }, function (error, response, body) {
-        if (response.statusCode === 404 || error) {
-          console.log(response)
-          vscode.window.showErrorMessage('Something went wrong, when trying to start the job.')
-        }
-        if (response.statusCode === 201) {
-          // setTimeout(function () {
-          return next(guid)
-          // }, 10000)
-        }
-        if (response.statusCode === 200) {
-          vscode.window.showInformationMessage('Job already running. Usually this means a mishap in the code.')
-        }
-      })
+        }, function (error, response, body) {
+          if (response.statusCode === 404 || error) {
+            console.log(response)
+            vscode.window.showErrorMessage('Something went wrong, when trying to start the job.')
+          }
+          if (response.statusCode === 201) {
+            // setTimeout(function () {
+            return next(guid)
+            // }, 10000)
+          }
+          if (response.statusCode === 200) {
+            vscode.window.showInformationMessage('Job already running. Usually this means a mishap in the code.')
+          }
+        })
+      } else {
+        request.put({
+          url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroups}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/jobs/${guid}?api-version=${azureconfig.apiVersion}`,
+          headers: {
+            'Authorization': token
+          },
+          json: {
+            'properties': {
+              'runbook': {
+                'name': '' + runbookName + ''
+              },
+              'parameters': { // Parameters of current open runbook.
+              }
+            }
+          }
+        }, function (error, response, body) {
+          if (response.statusCode === 404 || error) {
+            console.log(response)
+            vscode.window.showErrorMessage('Something went wrong, when trying to start the job.')
+          }
+          if (response.statusCode === 201) {
+            // setTimeout(function () {
+            return next(guid)
+            // }, 10000)
+          }
+          if (response.statusCode === 200) {
+            vscode.window.showInformationMessage('Job already running. Usually this means a mishap in the code.')
+          }
+        })
+      }
+      
     })
   })
 }
