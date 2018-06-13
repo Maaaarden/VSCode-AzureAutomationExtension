@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to the "azureautomation" extension will be documented in this file.
 
+## [0.6.7] - 2018-06-13
+### Fixed
+ - Fixed and error still preventing job execution when no hybridworkers present
+
 ## [0.6.6] - 2018-06-12
 ### Added
  - Added 'Open runbook from azure' functionality
