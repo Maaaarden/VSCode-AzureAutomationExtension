@@ -137,6 +137,7 @@ var getHybridWorkerGroups = function (token, next) {
       if ((bodyParsed.value).length === 0) {
         // console.log('No hybridworkers')
         vscode.window.showInformationMessage('No HybridWorkers found, running job in Azure')
+        next(false)
         // vscode.window.setStatusBarMessage('No HybridWorkers found, running job in Azure', 3100)
       } else {
         var returnArray = []
