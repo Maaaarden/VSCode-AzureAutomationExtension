@@ -1,11 +1,11 @@
 {
     "name": "azureautomation",
-    "displayName": "AzureAutomation",
+    "displayName": "Azure Automation",
     "description": "Work locally, against Azure Automation subscription.",
     "version": "0.6.7",
     "publisher": "AwesomeAutomationTeam",
     "engines": {
-        "vscode": "^1.10.0"
+        "vscode": "^1.24.1"
     },
     "repository": {
         "type": "git",
@@ -25,7 +25,8 @@
         "onCommand:extension.startPublishedRunbook",
         "onCommand:extension.updatePersonalInfo",
         "onCommand:extension.savePublishAndRun",
-        "onCommand:extension.openRunbookFromAzure"
+        "onCommand:extension.openRunbookFromAzure",
+        "onView:automation-runbooks"
     ],
     "main": "./extension",
     "contributes": {
@@ -130,6 +131,27 @@
                     "description": "Make use of double variable+credential notation as early versions, or single variable notation (If set to 'false' only one variable or credential is used)"
                 }
             }
+        },
+        "viewsContainers": {
+            "activitybar": [
+                {
+                    "id": "automation-explorer",
+                    "title": "Automation Explorer",
+                    "icon": "resources/automation.svg"
+                }
+            ]
+        },
+        "views": {
+            "automation-explorer": [
+                {
+                    "id": "automation-runbooks",
+                    "name": "Runbooks"
+                },
+                {
+                    "id": "automation-variables",
+                    "name": "Variables"
+                }
+            ]
         }
     },
     "scripts": {

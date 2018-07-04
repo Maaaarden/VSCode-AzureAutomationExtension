@@ -5,9 +5,11 @@ var vscode = require('vscode')
 function activateCommands (context) {
   var Azure = require('./modules/AzureAutomation.js')
   var Controller = require('./controller.js')
+  var RunbookProvider = require('./modules/RunbookProvider.js')
   // The command has been defined in the package.json file
   // Now provide the implementation of the command with  registerCommand
   // The commandId parameter must match the command field in package.json
+  
   var insertNewVariable = vscode.commands.registerCommand(
     'extension.insertNewVariable', function () {
       Controller.insertNewVariable()
@@ -92,6 +94,11 @@ function activateCommands (context) {
     }
   )
   context.subscriptions.push(openRunbookFromAzureDisposable)
+
+
+  var RunbookProvider = new RunbookProvider(context)
+  var treeView = vscode.window.createTreeView('automation-runbooks', { treeDataProvider: RunbookProvider } )
+  // treeView.reveal('0')
 }
 
 // this method is called when your extension is activated
@@ -110,3 +117,4 @@ exports.activate = activate
 function deactivate () {
 }
 exports.deactivate = deactivate
+
