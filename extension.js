@@ -1,9 +1,10 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 var vscode = require('vscode')
+var Azure = require('./modules/AzureAutomation.js')
+var listOfRunbooks = ''
 
 function activateCommands (context) {
-  var Azure = require('./modules/AzureAutomation.js')
   var Controller = require('./controller.js')
   var RunbookProvider = require('./modules/RunbookProvider.js')
   // The command has been defined in the package.json file
@@ -94,11 +95,10 @@ function activateCommands (context) {
     }
   )
   context.subscriptions.push(openRunbookFromAzureDisposable)
-
-
+  
   var RunbookProvider = new RunbookProvider(context)
-  var treeView = vscode.window.createTreeView('automation-runbooks', { treeDataProvider: RunbookProvider } )
-  // treeView.reveal('0')
+  vscode.window.registerTreeDataProvider('automation-runbooks', RunbookProvider)
+  //var treeView = vscode.window.createTreeView('automation-runbooks', { treeDataProvider: RunbookProvider } )
 }
 
 // this method is called when your extension is activated
@@ -107,10 +107,8 @@ function activate (context) {
   // Use the console to output diagnostic information (console.log) and errors (console.error)
   // This line of code will only be executed once when your extension is activated
   activateCommands(context)
-
   console.log('Congratulations, your extension azureautomation is now active!')
 }
-
 exports.activate = activate
 
 // this method is called when your extension is deactivated
