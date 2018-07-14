@@ -1,6 +1,7 @@
 const Azure = require('./modules/AzureAutomation.js')
 const AzureAssets = require('./modules/AzureAutomationAssets.js')
 const AzureJobs = require('./modules/AzureAutomationJobs.js')
+const Local = require('./modules/LocalAutomation.js')
 const vscode = require('vscode')
 const runbookOutput = vscode.window.createOutputChannel('RunbookOutput')
 const runbookOutputWarning = vscode.window.createOutputChannel('RunbookOutputWarning')
@@ -57,6 +58,21 @@ const openRunbookFromAzure = function () {
   })
 }
 
+const openSpecificRunbook = function (runbookName) {
+  Azure.doesRunbookExist(runbookName, function (runbookExist) {
+    if(runbookExist) {
+      Local.checkIfLocalExist(runbookName, (exists) => {
+        if(exists) {
+          Local.openLocalRunbook(runbookName)  
+        } else {
+          Azure.createLocalRunbook(runbookName, true, function () {
+          })
+        }
+      })
+    }
+  })
+}
+
 const insertNewVariable = function () {
   Azure.getOauthToken(function (token) {
     AzureAssets.newAssetVariable(token.value)
@@ -103,5 +119,6 @@ module.exports = {
   selectAssetVariable: selectAssetVariable,
   startPublishedRunbook: startPublishedRunbook,
   selectAssetCredential: selectAssetCredential,
-  openRunbookFromAzure: openRunbookFromAzure
+  openRunbookFromAzure: openRunbookFromAzure,
+  openSpecificRunbook: openSpecificRunbook
 }

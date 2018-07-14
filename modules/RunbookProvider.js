@@ -1,51 +1,50 @@
 var vscode = require('vscode')
-var json = require('jsonc-parser')
 const Azure = require('./AzureAutomation.js')
 var _ = require('lodash')
+var path = require('path')
 
 class RunbookProvider {
   constructor() {
     this._onDidChangeTreeData = new vscode.EventEmitter()
     this.onDidChangeTreeData = this._onDidChangeTreeData.event
     this.tree = null
-    this.parseTree()
-    this.refresh()
-    //var fish = '{"Runbooks":[{"Name":"AzureAutomationTutorial"},{"Name":"AzureAutomationTutorialPython2"},{"Name":"AzureAutomationTutorialScript"},{"Name":"AzureClassicAutomationTutorial"},{"Name":"AzureClassicAutomationTutorialScript"},{"Name":"BS-PowershellRunbookTemplate"},{"Name":"DisBeTestin"},{"Name":"First-Test"},{"Name":"Post-Runbook"},{"Name":"Pre-Runbook"},{"Name":"ttttttt"},{"Name":"verbosetest"}]}'
-    //this.tree = JSON.parse(fish)
-    //this.getRunbookList(function() {
-      
-    //})
+
+    Promise.all([
+      this.getRunbookList()
+    ]).then((rbList) => {
+      this.parseTree(JSON.parse(rbList))
+      this.refresh()
+    })
   }
 
   refresh() {
     this._onDidChangeTreeData.fire()
   }
 
-  parseTree(rbs) {
+  parseTree(rbList) {
     this.tree = null
-    //this.getRunbookList()
-    //.then(result => this.tree = JSON.parse(result))
-    //this.tree = runbookList
-    //this.getRunbookList(function(rbl) {
-    //  console.log('rbl', rbl)
-    //  obj.tree = JSON.parse('{"Runbooks":[{"Name":"AzureAutomationTutorial"},{"Name":"AzureAutomationTutorialPython2"},{"Name":"AzureAutomationTutorialScript"},{"Name":"AzureClassicAutomationTutorial"},{"Name":"AzureClassicAutomationTutorialScript"},{"Name":"BS-PowershellRunbookTemplate"},{"Name":"DisBeTestin"},{"Name":"First-Test"},{"Name":"Post-Runbook"},{"Name":"Pre-Runbook"},{"Name":"ttttttt"},{"Name":"verbosetest"}]}') //rbl
-    //})
-    //this.tree = JSON.parse(rbs)
-    this.tree = JSON.parse('{"Runbooks":[{"Name":"AzureAutomationTutorial"},{"Name":"AzureAutomationTutorialPython2"},{"Name":"AzureAutomationTutorialScript"},{"Name":"AzureClassicAutomationTutorial"},{"Name":"AzureClassicAutomationTutorialScript"},{"Name":"BS-PowershellRunbookTemplate"},{"Name":"DisBeTestin"},{"Name":"First-Test"},{"Name":"Post-Runbook"},{"Name":"Pre-Runbook"},{"Name":"ttttttt"},{"Name":"verbosetest"}]}')
+    this.tree = rbList
   }
 
-  getRunbookList(next) {
-    var listOfRunbooks = ''
-    Azure.getListOfRunbooks(function (runbookList) {
-      listOfRunbooks = '{"Runbooks":['
-      _.forEach(runbookList, function (runbookObject) {
-        listOfRunbooks += '{"Name":"' + runbookObject + '"},'
+  getRunbookList() {
+    return new Promise((resolve, reject) => {
+      var listOfRunbooks = ''
+      Azure.getListOfRunbooks(function (runbookList) {
+        listOfRunbooks = '{"Runbooks":['
+        _.forEach(runbookList, function (runbookObject) {
+          listOfRunbooks += '{"Name":"' + runbookObject + '"},'
+        })
+        listOfRunbooks = listOfRunbooks.replace(/,(\s+)?$/, '')
+        listOfRunbooks += ']}'
+        if(listOfRunbooks === '') {
+          reject('error getting runbooks')
+        } else {
+          resolve(listOfRunbooks)
+        }
+        //return next(listOfRunbooks)
       })
-      listOfRunbooks = listOfRunbooks.replace(/,(\s+)?$/, '')
-      listOfRunbooks += ']}'
-      RunbookProvider.tree = listOfRunbooks
-      return next()
-      //return next(listOfRunbooks)
+      
+      //reject('error in rb list')
     })
   }
 
@@ -78,30 +77,16 @@ class RunbookProvider {
   }
 
   getTreeItem(node) {
-    //console.log(node)
-    /*
-    let valueNode
-    if(node.parent.type == 'array') {
-      valueNode = node
-    } else {
-      valueNode = node.children[0]
-    }
-
-    //let valueNode = node.parent.type == 'array' ? node : node.children[0]
-    let hasChildren = false
-    if(node.parent.type === 'array' && !node['arrayValue'] || valueNode.type === 'object' || valueNode.type === 'array') {
-      hasChildren = true
-    }
-
-    //let hasChildren = (node.parent.type === 'array' && !node['arrayValue']) || valueNode.type === 'object' || valueNode.type === 'array'
-    //console.log(valueNode)
-    //console.log(hasChildren)
-		let treeItem = new vscode.TreeItem(this.getLabel(node), hasChildren ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None)
-    */
+ 
     let treeItem = new vscode.TreeItem(node.Name, vscode.TreeItemCollapsibleState.None)
-   
+    treeItem.command = {
+			command: 'extension.openSpecificRunbook',
+			title: '',
+			arguments: [treeItem.label]
+    }
 	  return treeItem;
   }
+
 /*
   getLabel(node) {
     //console.log("node", node)

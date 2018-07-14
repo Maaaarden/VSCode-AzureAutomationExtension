@@ -11,6 +11,9 @@ function activateCommands (context) {
   // Now provide the implementation of the command with  registerCommand
   // The commandId parameter must match the command field in package.json
   
+  var RunbookProvider = new RunbookProvider(context)
+  vscode.window.registerTreeDataProvider('automation-runbooks', RunbookProvider)
+
   var insertNewVariable = vscode.commands.registerCommand(
     'extension.insertNewVariable', function () {
       Controller.insertNewVariable()
@@ -95,9 +98,16 @@ function activateCommands (context) {
     }
   )
   context.subscriptions.push(openRunbookFromAzureDisposable)
+
+  var openSpecificRunbookDisposable = vscode.commands.registerCommand(
+    'extension.openSpecificRunbook', function (runbookName) {
+      Controller.openSpecificRunbook(runbookName, () => {
+
+      })
+    }
+  )
+  context.subscriptions.push(openSpecificRunbookDisposable)
   
-  var RunbookProvider = new RunbookProvider(context)
-  vscode.window.registerTreeDataProvider('automation-runbooks', RunbookProvider)
   //var treeView = vscode.window.createTreeView('automation-runbooks', { treeDataProvider: RunbookProvider } )
 }
 
