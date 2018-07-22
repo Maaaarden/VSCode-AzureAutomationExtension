@@ -31,9 +31,10 @@ const createNewRunbook = function () {
   .then(runbookName => {
     Azure.doesRunbookExist(runbookName, function (runbookExist) {
       if (!runbookExist) {
-        Azure.createLocalRunbook(runbookName, undefined, function () {
+        Azure.createLocalRunbook(runbookName, undefined, undefined, function () {
           Azure.createAzureRunbook(function () {
             Azure.saveAsDraft(function () {
+              vscode.commands.executeCommand('extension.updateRunbookProvider')
             })
           })
         })
@@ -50,7 +51,21 @@ const openRunbookFromAzure = function () {
     .then(runbookName => {
       Azure.doesRunbookExist(runbookName, function (runbookExist) {
         if(runbookExist) {
-          Azure.createLocalRunbook(runbookName, true, function () {
+          Azure.getRunbookInfo(runbookName)
+          .then(rbInfo => {
+            if(rbInfo.properties.state == 'New') {
+              Azure.createLocalRunbook(runbookName, true, false, function() {
+                vscode.commands.executeCommand('extension.updateRunbookProvider')
+              })
+            } else {
+              vscode.window.showQuickPick(['Published', 'Draft'])
+              .then(pick => {
+                let draft = pick == 'Draft' ? true : false
+                Azure.createLocalRunbook(runbookName, true, draft, function () {
+                  vscode.commands.executeCommand('extension.updateRunbookProvider')
+                })
+              })
+            }
           })
         }
       })
@@ -58,17 +73,17 @@ const openRunbookFromAzure = function () {
   })
 }
 
-const openSpecificRunbook = function (runbookName) {
+const openSpecificRunbook = function (runbookName, published) {
   Azure.doesRunbookExist(runbookName, function (runbookExist) {
     if(runbookExist) {
-      Local.checkIfLocalExist(runbookName, (exists) => {
-        if(exists) {
-          Local.openLocalRunbook(runbookName)  
-        } else {
-          Azure.createLocalRunbook(runbookName, true, function () {
+      //Local.checkIfLocalExist(runbookName, (exists) => {
+        //if(exists) {
+          //Local.openLocalRunbook(runbookName)  
+        //} else {
+          Azure.createLocalRunbook(runbookName, true, published, function () {
           })
-        }
-      })
+        //}
+      //})
     }
   })
 }

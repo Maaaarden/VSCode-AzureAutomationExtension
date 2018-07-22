@@ -2,7 +2,6 @@
 // Import the module and reference it with the alias vscode in your code below
 var vscode = require('vscode')
 var Azure = require('./modules/AzureAutomation.js')
-var listOfRunbooks = ''
 
 function activateCommands (context) {
   var Controller = require('./controller.js')
@@ -11,8 +10,15 @@ function activateCommands (context) {
   // Now provide the implementation of the command with  registerCommand
   // The commandId parameter must match the command field in package.json
   
-  var RunbookProvider = new RunbookProvider(context)
-  vscode.window.registerTreeDataProvider('automation-runbooks', RunbookProvider)
+  var RunbookProviderObj = new RunbookProvider(context)
+  vscode.window.registerTreeDataProvider('automation-runbooks', RunbookProviderObj)
+
+  var updateRunbookProvider = vscode.commands.registerCommand(
+    'extension.updateRunbookProvider', function () {
+      RunbookProviderObj.refresh()
+    }
+  )
+  context.subscriptions.push(updateRunbookProvider)
 
   var insertNewVariable = vscode.commands.registerCommand(
     'extension.insertNewVariable', function () {
@@ -66,7 +72,9 @@ function activateCommands (context) {
   var publishRunbookDisposable = vscode.commands.registerCommand(
     'extension.publishRunbook', function () {
       Controller.saveDraft(() => {
-        Azure.publishRunbook(() => { })
+        Azure.publishRunbook(() => {
+          vscode.commands.executeCommand('extension.updateRunbookProvider')
+        })
       })
     }
   )
@@ -100,8 +108,8 @@ function activateCommands (context) {
   context.subscriptions.push(openRunbookFromAzureDisposable)
 
   var openSpecificRunbookDisposable = vscode.commands.registerCommand(
-    'extension.openSpecificRunbook', function (runbookName) {
-      Controller.openSpecificRunbook(runbookName, () => {
+    'extension.openSpecificRunbook', function (runbookName, published) {
+      Controller.openSpecificRunbook(runbookName, published, () => {
 
       })
     }
@@ -111,12 +119,27 @@ function activateCommands (context) {
   //var treeView = vscode.window.createTreeView('automation-runbooks', { treeDataProvider: RunbookProvider } )
 }
 
+function checkForWorkspace () {
+  return new Promise((resolve, reject) => {
+    var hasWorkspace = !!vscode.workspace.rootPath
+    if (!hasWorkspace) {
+      vscode.window.showErrorMessage('No workspace found. Please open a folder.')
+      reject()
+    } else {
+      resolve()
+    }
+  })
+}
+
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 function activate (context) {
   // Use the console to output diagnostic information (console.log) and errors (console.error)
   // This line of code will only be executed once when your extension is activated
-  activateCommands(context)
+  checkForWorkspace()
+  .then(() => {
+    activateCommands(context)
+  })
   console.log('Congratulations, your extension azureautomation is now active!')
 }
 exports.activate = activate

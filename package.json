@@ -90,6 +90,11 @@
                 "command": "extension.openSpecificRunbook",
                 "title": "Open specific runbook",
                 "category": "Azure Automation"
+            },
+            {
+                "command": "extension.updateRunbookProvider",
+                "title": "Update runbook view",
+                "category": "Azure Automation"
             }
         ],
         "configuration": {
@@ -163,6 +168,10 @@
                 {
                     "when": "false",
                     "command": "extension.openSpecificRunbook"
+                },
+                {
+                    "when": "false",
+                    "command": "extension.updateRunbookProvider"
                 }
             ]
         }

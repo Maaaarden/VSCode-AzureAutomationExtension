@@ -1,7 +1,6 @@
 var vscode = require('vscode')
 const Azure = require('./AzureAutomation.js')
 var _ = require('lodash')
-var path = require('path')
 
 class RunbookProvider {
   constructor() {
@@ -9,16 +8,23 @@ class RunbookProvider {
     this.onDidChangeTreeData = this._onDidChangeTreeData.event
     this.tree = null
 
-    Promise.all([
-      this.getRunbookList()
-    ]).then((rbList) => {
-      this.parseTree(JSON.parse(rbList))
-      this.refresh()
-    })
+    //this.newJson()
+    //.then((output) => { console.log(output) })
+
+    
+    this.refresh()
   }
 
   refresh() {
-    this._onDidChangeTreeData.fire()
+    Promise.all([
+      this.newJson()
+    ]).then((rbList) => {
+      this.modifyPublishedState(rbList)
+      .then(rbListModified => {
+        this.parseTree(rbListModified)
+        this._onDidChangeTreeData.fire()
+      })
+    })
   }
 
   parseTree(rbList) {
@@ -26,25 +32,83 @@ class RunbookProvider {
     this.tree = rbList
   }
 
-  getRunbookList() {
+  modifyPublishedState(rbList) {
     return new Promise((resolve, reject) => {
-      var listOfRunbooks = ''
-      Azure.getListOfRunbooks(function (runbookList) {
-        listOfRunbooks = '{"Runbooks":['
-        _.forEach(runbookList, function (runbookObject) {
-          listOfRunbooks += '{"Name":"' + runbookObject + '"},'
+      _.forEach(rbList[0].Children, function(rb) {
+        Azure.getRunbookInfo(rb.Name)
+        .then(rbInfo => {
+          rbList[0].Children.find(x => x == rb).Published = rbInfo.properties.state != 'New' ? true : false
         })
-        listOfRunbooks = listOfRunbooks.replace(/,(\s+)?$/, '')
-        listOfRunbooks += ']}'
-        if(listOfRunbooks === '') {
-          reject('error getting runbooks')
-        } else {
-          resolve(listOfRunbooks)
-        }
-        //return next(listOfRunbooks)
       })
-      
-      //reject('error in rb list')
+      resolve(rbList)
+    })
+  }
+
+  newJson() {
+    return new Promise((resolve, reject) => {
+      this.createJsonPayload()
+      .then(jsonPayload => {
+        _.forEach(jsonPayload.Children, function(jsonObj) {
+          Azure.getRunbookInfo(jsonObj.Name)
+          .then(rbInfo => {
+            if(rbInfo.properties.state != 'New') {
+              jsonPayload.Children.find(x => x == jsonObj).Children.unshift({"Name": "Published", "Level": 2, "Parent": jsonPayload.Children.find(x => x == jsonObj)})  
+            }
+            //jsonPayload.Children.find(x => x == jsonObj).Published = rbInfo.properties.state != 'New' ? true : false
+            let tagsArray = Object.getOwnPropertyNames(rbInfo.tags)
+            if(rbInfo.tags == null || tagsArray.length == 0) {
+            } else {
+              _.forEach(tagsArray, function(tag) {
+                jsonPayload.Children.find(x => x == jsonObj).Children[1].Children = [
+                  {
+                    "Parent": jsonPayload.Children.find(x => x == jsonObj).Children[1],
+                    "Level": 3,
+                    "Name": [tag],
+                    "Value": rbInfo.tags[tag]
+                  }
+                ]
+              })
+            }
+          })
+        })
+        resolve(jsonPayload)
+      })
+    })
+  }
+
+  createJsonPayload() {
+    return new Promise((resolve, reject) => {
+      let jsonPayload = {
+        "Name": "Runbooks",
+        "Level": 0,
+        "Children": []
+      }
+
+      Azure.getListOfRunbooks(function (runbookList) {
+        let i = 0
+        _.forEach(runbookList, function(runbookObject) {
+          jsonPayload.Children[i] = {
+            "Name": runbookObject,
+            "Level": 1,
+            "Parent": jsonPayload,
+            "Published": false,
+            "Children": [
+              //{
+              //  "Name": "Published",
+              //  "Level": 2
+              //},
+              {
+                "Name": "Tags",
+                "Level": 2
+              }
+            ]
+          }
+          jsonPayload.Children[i].Children[0].Parent = jsonPayload.Children[i]
+          //jsonPayload.Children[i].Children[1].Parent = jsonPayload.Children[i]
+          i++
+        })
+        resolve(jsonPayload)
+      })
     })
   }
 
@@ -53,74 +117,43 @@ class RunbookProvider {
       return this._getChildren(node)
     } else {
       if(this.tree) {
-        //return this.tree.children
-        return this.tree.Runbooks
+        return this.tree[0].Children
       } else {
         return []
       }
-      //return this.tree ? this.tree.children : []
     }
   }
 
   _getChildren(node) {
-    if(node.parent.type === 'array') {
-      return this.toArrayValueNode(node)
-    } else if (node.type === 'array') {
-      return node.children[0].children
-    } else {
-      return node.children[1].children
-    }
-
-
-
-    //return node.parent.type === 'array' ? this.toArrayValueNode(node) : (node.type === 'array' ? node.children[0].children : node.children[1].children);
+    return node.Children
   }
 
   getTreeItem(node) {
- 
-    let treeItem = new vscode.TreeItem(node.Name, vscode.TreeItemCollapsibleState.None)
-    treeItem.command = {
-			command: 'extension.openSpecificRunbook',
-			title: '',
-			arguments: [treeItem.label]
+    let hasChildren = node.Children ? true : false
+    let treeItemName = node.Level == 3 ? '' + node.Name + ': ' + node.Value + '' : node.Name
+    let treeItem = new vscode.TreeItem(treeItemName, hasChildren ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None)
+    switch(node.Level) {
+      case 1:
+        treeItem.command = {
+          command: 'extension.openSpecificRunbook',
+          title: '',
+          arguments: [treeItem.label, false]
+        }
+        break;
+      case 2:
+        if(node.Name == 'Published' && node.Parent.Published == true) {
+          treeItem.command = {
+            command: 'extension.openSpecificRunbook',
+            title: '',
+            arguments: [node.Parent.Name, node.Parent.Published]
+          }
+        } else if (node.Parent.published == false) {
+          
+        }
+        break;
     }
 	  return treeItem;
   }
-
-/*
-  getLabel(node) {
-    //console.log("node", node)
-		if (node.parent.type === 'array') {
-			if (node['arrayValue']) {
-				delete node['arrayValue']
-				if (!node.children) {
-					return node.value.toString()
-				}
-			} else {
-        return node.children[0].children[0].value.toString()
-				// return node.parent.children.indexOf(node).toString()
-			}
-    }
-    
-    const property = node.children[0].value.toString()
-    if (node.children[1].type === 'object') {
-			return '{ } ' + property;
-		}
-		if (node.children[1].type === 'array') {
-			return '[ ] ' + property;
-		}
-    
-    return property
-  }
-  
-  toArrayValueNode(node) {
-    if (node.type === 'array' || node.type === 'object') {
-			return node.children;
-		}
-		node['arrayValue'] = true;
-		return [node];
-  }
-*/
 }
 
 module.exports = RunbookProvider
