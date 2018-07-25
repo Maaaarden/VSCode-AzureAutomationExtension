@@ -1,6 +1,15 @@
 # Change Log
 All notable changes to the "azureautomation" extension will be documented in this file.
 
+## [0.7.0] - 2018-07-25
+### Added
+ - Added a new view container to the side bar with a view of runbooks in your Automation Account
+ - Added a 'Refresh' button to the view
+ - Added a 'Create new runbook' button to the view
+
+### Fixed
+ - Fixed an issue when having more than 100 runbooks, the rest would not be shown in 'Open runbook from Azure' command
+
 ## [0.6.7] - 2018-06-13
 ### Fixed
  - Fixed and error still preventing job execution when no hybridworkers present

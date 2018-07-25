@@ -16,6 +16,9 @@ const saveDraft = function (next) {
         vscode.window.showInformationMessage('Couldn\'t find your Runbook in Azure, so created it for you.')
         // Try and save again.
         Azure.saveAsDraft(function () {
+          setTimeout(function () {
+            vscode.commands.executeCommand('extension.updateRunbookProvider')
+          }, 2000)
           return next()
         })
       })
@@ -28,18 +31,23 @@ const saveDraft = function (next) {
 const createNewRunbook = function () {
   vscode.window.showInputBox({prompt: 'Name of your Runbook. (Without the .ps1 extension)'})
   .then(runbookName => {
-    Azure.doesRunbookExist(runbookName, function (runbookExist) {
-      if (!runbookExist) {
-        Azure.createLocalRunbook(runbookName, undefined, function () {
-          Azure.createAzureRunbook(function () {
-            Azure.saveAsDraft(function () {
+    if(runbookName != undefined) {
+      Azure.doesRunbookExist(runbookName, function (runbookExist) {
+        if (!runbookExist) {
+          Azure.createLocalRunbook(runbookName, undefined, undefined, function () {
+            Azure.createAzureRunbook(function () {
+              Azure.saveAsDraft(function () {
+                setTimeout(function () {
+                  vscode.commands.executeCommand('extension.updateRunbookProvider')
+                }, 2000)
+              })
             })
           })
-        })
-      } else {
-        vscode.window.showErrorMessage('The provided Runbook name already exists in Azure Cloud')
-      }
-    })
+        } else {
+          vscode.window.showErrorMessage('The provided Runbook name already exists in Azure Cloud')
+        }
+      })
+    }
   })
 }
 
@@ -49,11 +57,38 @@ const openRunbookFromAzure = function () {
     .then(runbookName => {
       Azure.doesRunbookExist(runbookName, function (runbookExist) {
         if(runbookExist) {
-          Azure.createLocalRunbook(runbookName, true, function () {
+          Azure.getRunbookInfo(runbookName)
+          .then(rbInfo => {
+            if(rbInfo.properties.state == 'New') {
+              Azure.createLocalRunbook(runbookName, true, false, function() {
+                setTimeout(function () {
+                  vscode.commands.executeCommand('extension.updateRunbookProvider')
+                }, 2000)
+              })
+            } else {
+              vscode.window.showQuickPick(['Published', 'Draft'])
+              .then(pick => {
+                let draft = pick == 'Draft' ? true : false
+                Azure.createLocalRunbook(runbookName, true, draft, function () {
+                  setTimeout(function () {
+                    vscode.commands.executeCommand('extension.updateRunbookProvider')
+                  }, 2000)
+                })
+              })
+            }
           })
         }
       })
     })
+  })
+}
+
+const openSpecificRunbook = function (runbookName, published) {
+  Azure.doesRunbookExist(runbookName, function (runbookExist) {
+    if(runbookExist) {
+      Azure.createLocalRunbook(runbookName, true, published, function () {
+      })
+    }
   })
 }
 
@@ -103,5 +138,6 @@ module.exports = {
   selectAssetVariable: selectAssetVariable,
   startPublishedRunbook: startPublishedRunbook,
   selectAssetCredential: selectAssetCredential,
-  openRunbookFromAzure: openRunbookFromAzure
+  openRunbookFromAzure: openRunbookFromAzure,
+  openSpecificRunbook: openSpecificRunbook
 }

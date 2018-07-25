@@ -1,11 +1,11 @@
 {
     "name": "azureautomation",
-    "displayName": "AzureAutomation",
+    "displayName": "Azure Automation",
     "description": "Work locally, against Azure Automation subscription.",
-    "version": "0.6.7",
+    "version": "0.7.0",
     "publisher": "AwesomeAutomationTeam",
     "engines": {
-        "vscode": "^1.10.0"
+        "vscode": "^1.24.1"
     },
     "repository": {
         "type": "git",
@@ -25,7 +25,8 @@
         "onCommand:extension.startPublishedRunbook",
         "onCommand:extension.updatePersonalInfo",
         "onCommand:extension.savePublishAndRun",
-        "onCommand:extension.openRunbookFromAzure"
+        "onCommand:extension.openRunbookFromAzure",
+        "onView:automation-runbooks"
     ],
     "main": "./extension",
     "contributes": {
@@ -38,7 +39,11 @@
             {
                 "command": "extension.createNewRunbook",
                 "title": "Create New Runbook",
-                "category": "Azure Automation"
+                "category": "Azure Automation",
+                "icon": {
+                    "light": "/resources/add.png",
+                    "dark": "/resources/add.png"
+                }
             },
             {
                 "command": "extension.publishRunbook",
@@ -84,6 +89,20 @@
                 "command": "extension.openRunbookFromAzure",
                 "title": "Open runbook from Azure",
                 "category": "Azure Automation"
+            },
+            {
+                "command": "extension.openSpecificRunbook",
+                "title": "Open specific runbook",
+                "category": "Azure Automation"
+            },
+            {
+                "command": "extension.updateRunbookProvider",
+                "title": "Update runbook view",
+                "category": "Azure Automation",
+                "icon": {
+                    "dark": "/resources/sync.svg",
+                    "light": "/resources/sync.svg"
+                }
             }
         ],
         "configuration": {
@@ -130,6 +149,53 @@
                     "description": "Make use of double variable+credential notation as early versions, or single variable notation (If set to 'false' only one variable or credential is used)"
                 }
             }
+        },
+        "viewsContainers": {
+            "activitybar": [
+                {
+                    "id": "automation-explorer",
+                    "title": "Automation Explorer",
+                    "icon": "resources/automation.svg"
+                }
+            ]
+        },
+        "views": {
+            "automation-explorer": [
+                {
+                    "id": "automation-runbooks",
+                    "name": "Runbooks"
+                }
+            ]
+        },
+        "menus": {
+            "view/title": [
+                {
+                    "when": "view == automation-runbooks",
+                    "command": "extension.updateRunbookProvider",
+                    "group": "navigation"
+                },
+                {
+                    "when": "view == automation-runbooks",
+                    "command": "extension.createNewRunbook",
+                    "group": "navigation"
+                }
+            ],
+            "view/item/context": [
+                {
+                    "when": "viewItem == Published",
+                    "command": "extension.updateRunbookProvider"
+                }
+            ],
+            "commandPalette": [
+                {
+                    "when": "false",
+                    "command": "extension.openSpecificRunbook"
+                },
+                {
+                    "when": "false",
+                    "command": "extension.updateRunbookProvider"
+                }
+            ]
         }
     },
     "scripts": {

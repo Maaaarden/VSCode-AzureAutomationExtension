@@ -9,10 +9,20 @@ Make sure the application is added to your Automation Account as 'Contributor'
 
 NEW: Make sure to update all the settings under 'Azure Automation configuration' by copying to your custom settings.
 
-## Functions
+## Runbook view container
+In the side bar, a new view has been added to give an overview of your runbooks.
+
+When clicking on a runbook it will automatically fetch your draft version and create as a file locally in you open folder.
+However, if you have a published version available, it will show as a child - so expand the runbook item and click 'Published' to get you published version of the runbook, to edit.
+Below is a quick view of how the tree structure is supposed to look for your runbooks.
+ - 'runbookname'
+   - 'Published' (only if a published version exists)
+   - 'Tags' (Shows a view of current tags associated with your runbok)
+
+## Functionality
 A list of the functionality available in this extension
 
- - Create Runbook (Using a template/or from scratch)
+ - Create Runbook (Using a template or from scratch)
  - Open existing runbook
  - Save Draft
  - Publish
@@ -51,35 +61,6 @@ Based on the 'DualVars' setting, this will either create 1 or 2 assets. Insterti
 Insert an existing variable or credential asset.
 Based on the 'DualVars' setting, this will either use 1 or 2 assets. Insterting code into your runbook automatically
 
-## Settings
-The following settings are available in 'User Settings'
-
-  // API Version used by Azure REST API
-  "azureautomation.apiVersion": "2018-01-15",
-
-  // Name of the automation account you're working against
-  "azureautomation.automationAccount": "",
-
-  // Client ID for your AAD App
-  "azureautomation.clientId": "",
-
-  // Client secret for your AAD App
-  "azureautomation.clientSecret": "",
-
-  // Make use of double variable+credential notation as early versions, or single variable notation (If set to 'false' only one variable or credential is used)
-  "azureautomation.dualVars": true,
-
-  // Name of the resource group your automation account resides in.
-  "azureautomation.resourceGroup": "",
-
-  // ID of your subscription.
-  "azureautomation.subscriptionId": "",
-
-  // Name of your template in the automation account (Leave blank if you don't use a template)
-  "azureautomation.templateName": ""
-
-Remember to update these, accordingly to your AAD application, created for access to the Azure ARM API
-
 ## Job output
 The extension makes use of output consoles in VS Code. When using it to execute a runbook in Azure (or any of your hybridworker groups), all outputs are shown inside VS Code.
 
@@ -89,4 +70,12 @@ Error output is automatically highlighted if any.
 This extension was made with specific use inside my organisation for eye. A few of the functions have been designed specifically for this.
 Since version 0.6.4, it has been posible to turn off these functionalities. Trying to make this a generic usable as posible.
 
+## Feedback
 Feedback on this functionality is more than welcome - as is changes to this, to support a broader usecase.
+
+I would really appreciate if you could bring usecases for the following examples, and requests to how it should work:
+
+ - Parameters
+    - It is posible to pull the parameters from the API, and thus be able to build some kind of functionality around that to support entering parameters when trying to run a runbook
+ - Draft / Published
+    - I would like to hear about your usage of these 2 versions of the runbook. And to hear if you have any wishes to support that way of working.

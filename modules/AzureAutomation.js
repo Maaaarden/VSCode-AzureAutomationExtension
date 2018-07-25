@@ -25,21 +25,55 @@ var getOauthToken = function (next) {
   })
 }
 
+var getRunbookInfo = function (runbookName) {
+  return new Promise((resolve, reject) => {
+    var vscode = require('vscode')
+    var request = require('request')
+    var azureconfig = vscode.workspace.getConfiguration("azureautomation")
+    var _ = require('lodash')
+    
+    getOauthToken(function (token) {
+      request.get({
+        url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroups}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/runbooks/${runbookName}?api-version=${azureconfig.apiVersion}`,
+        headers: {
+          'Authorization': token.value,
+          'content-type': 'application/json'
+        }
+      }, function (error, response, body) {
+        if (error) {
+          console.log(error)
+          return vscode.window.showErrorMessage('Could not get list of Runbooks from Azure Automation!')
+        }
+        var bodyParsed = JSON.parse(body)
+
+        resolve(bodyParsed)
+      })
+    })
+  })
+}
+
 /**
  * Gets a list of all runbooks in Azure and returns an array containing
  * only the names without the .ps1 extension.
  * @param   {Function}  next    Callback function
  * @return  {Array}             Returns an array with runbook names.
  */
-var getListOfRunbooks = function (next) {
+var getListOfRunbooks = function (next, skip = false, runbookNames = false) {
   var vscode = require('vscode')
   var request = require('request')
   var azureconfig = vscode.workspace.getConfiguration("azureautomation")
   var _ = require('lodash')
 
+  if(!skip) {
+    skip = ''
+  }
+  if(!runbookNames) {
+    runbookNames = []
+  }
+
   getOauthToken(function (token) {
     request.get({
-      url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroups}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/runbooks?api-version=${azureconfig.apiVersion}`,
+      url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroups}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/runbooks?api-version=${azureconfig.apiVersion}${skip}`,
       headers: {
         'Authorization': token.value,
         'content-type': 'application/json'
@@ -50,12 +84,17 @@ var getListOfRunbooks = function (next) {
         return vscode.window.showErrorMessage('Could not get list of Runbook from Azure Automation!')
       }
       var bodyParsed = JSON.parse(body)
-      var runbookNames = []
-
+      var i = 0
       _.forEach(bodyParsed.value, function (runbookObject) {
         runbookNames.push(runbookObject.name)
+        i++
       })
-      return next(runbookNames)
+      if(bodyParsed.nextLink && i == bodyParsed.value.length) {
+        skip = '&' + bodyParsed.nextLink.split('&').pop()
+        getListOfRunbooks(next, skip, runbookNames)
+      } else {
+        return next(runbookNames)
+      }
     })
   })
 }
@@ -140,8 +179,6 @@ var createAzureRunbook = function (next) {
             },
             'location': 'westeurope'
           }
-
-        // First splits the string on '\', second takes the last value in the array, finally replaces '.ps1' with nothing (removes it).
         request.put({
           url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroups}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/runbooks/${runbookName}?api-version=${azureconfig.apiVersion}`,
           headers: {
@@ -154,13 +191,11 @@ var createAzureRunbook = function (next) {
             console.log(error)
             return vscode.window.showErrorMessage('An error occured while trying to create the runbook in Azure Cloud.')
           }
-          console.log(response)
           if (response.statusCode === 201) {
             vscode.window.setStatusBarMessage('Runbook created in Azure Cloud.', 3100)
             //vscode.window.showInformationMessage('Runbook created in Azure Cloud.')
             return next()
           } else {
-            console.log(body)
             return vscode.window.showErrorMessage('Could not create Runbook in Azure Cloud..')
           }
         })
@@ -175,7 +210,7 @@ var createAzureRunbook = function (next) {
  * @param   {String}    runbookName The name of the runbook you wish to create.
  * @param   {Function}  next        Callback function
  */
-var createLocalRunbook = function (runbookName, existing=false, next) {
+var createLocalRunbook = function (runbookName, existing=false, published=false, next) {
   var vscode = require('vscode')
   var request = require('request')
   var azureconfig = vscode.workspace.getConfiguration("azureautomation")
@@ -187,10 +222,12 @@ var createLocalRunbook = function (runbookName, existing=false, next) {
     return vscode.window.showErrorMessage('No workspace found. Please open a folder before creating a new Runbook.')
   }
 
+  let publishedV = published == false ? 'draft/' : ''
+
   if (existing) {
     getOauthToken(function (token) {
       request.get({
-        url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroups}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/runbooks/${runbookName}/content?api-version=${azureconfig.apiVersion}`,
+        url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroups}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/runbooks/${runbookName}/${publishedV}content?api-version=${azureconfig.apiVersion}`,
         headers: {
           'Authorization': token.value
         }
@@ -279,7 +316,7 @@ var publishRunbook = function (next) {
       }
       if (response.statusCode === 202) {
         vscode.window.setStatusBarMessage('Runbook successfully published.', 3100)
-        // vscode.window.showInformationMessage('Runbook successfully published')
+        vscode.commands.executeCommand('extension.updateRunbookProvider')
         return next()
       } else {
         return vscode.window.showErrorMessage('Could not publish the runbook.')
@@ -427,5 +464,6 @@ module.exports = {
   createLocalRunbook: createLocalRunbook,
   publishRunbook: publishRunbook,
   doesRunbookExist: doesRunbookExist,
-  startPublishedRunbook: startPublishedRunbook
+  startPublishedRunbook: startPublishedRunbook,
+  getRunbookInfo: getRunbookInfo
 }
