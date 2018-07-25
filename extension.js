@@ -73,7 +73,6 @@ function activateCommands (context) {
     'extension.publishRunbook', function () {
       Controller.saveDraft(() => {
         Azure.publishRunbook(() => {
-          vscode.commands.executeCommand('extension.updateRunbookProvider')
         })
       })
     }

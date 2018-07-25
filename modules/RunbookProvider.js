@@ -1,6 +1,7 @@
 var vscode = require('vscode')
 const Azure = require('./AzureAutomation.js')
 var _ = require('lodash')
+var path = require('path')
 
 class RunbookProvider {
   constructor() {

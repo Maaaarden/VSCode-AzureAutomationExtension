@@ -2,7 +2,7 @@
     "name": "azureautomation",
     "displayName": "Azure Automation",
     "description": "Work locally, against Azure Automation subscription.",
-    "version": "0.6.7",
+    "version": "0.7.0",
     "publisher": "AwesomeAutomationTeam",
     "engines": {
         "vscode": "^1.24.1"
@@ -39,7 +39,11 @@
             {
                 "command": "extension.createNewRunbook",
                 "title": "Create New Runbook",
-                "category": "Azure Automation"
+                "category": "Azure Automation",
+                "icon": {
+                    "light": "/resources/add.png",
+                    "dark": "/resources/add.png"
+                }
             },
             {
                 "command": "extension.publishRunbook",
@@ -94,7 +98,11 @@
             {
                 "command": "extension.updateRunbookProvider",
                 "title": "Update runbook view",
-                "category": "Azure Automation"
+                "category": "Azure Automation",
+                "icon": {
+                    "dark": "/resources/sync.svg",
+                    "light": "/resources/sync.svg"
+                }
             }
         ],
         "configuration": {
@@ -156,14 +164,28 @@
                 {
                     "id": "automation-runbooks",
                     "name": "Runbooks"
-                },
-                {
-                    "id": "automation-variables",
-                    "name": "Variables"
                 }
             ]
         },
         "menus": {
+            "view/title": [
+                {
+                    "when": "view == automation-runbooks",
+                    "command": "extension.updateRunbookProvider",
+                    "group": "navigation"
+                },
+                {
+                    "when": "view == automation-runbooks",
+                    "command": "extension.createNewRunbook",
+                    "group": "navigation"
+                }
+            ],
+            "view/item/context": [
+                {
+                    "when": "viewItem == Published",
+                    "command": "extension.updateRunbookProvider"
+                }
+            ],
             "commandPalette": [
                 {
                     "when": "false",

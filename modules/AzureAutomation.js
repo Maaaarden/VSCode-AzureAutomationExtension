@@ -316,6 +316,7 @@ var publishRunbook = function (next) {
       }
       if (response.statusCode === 202) {
         vscode.window.setStatusBarMessage('Runbook successfully published.', 3100)
+        vscode.commands.executeCommand('extension.updateRunbookProvider')
         return next()
       } else {
         return vscode.window.showErrorMessage('Could not publish the runbook.')
