@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to the "azureautomation" extension will be documented in this file.
 
+## [0.7.1] - 2018-09-05
+### Fixed
+ - Fixed an issue causing no body to be able to get oAuth tokens for login
+
 ## [0.7.0] - 2018-07-25
 ### Added
  - Added a new view container to the side bar with a view of runbooks in your Automation Account
