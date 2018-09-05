@@ -10,7 +10,7 @@ var getOauthToken = function (next) {
   var azureconfig = vscode.workspace.getConfiguration("azureautomation")
 
   request({
-    url: `https://login.microsoftonline.com/98db9fb9-f52b-4e63-83d9-795ccd2dfcca/oauth2/token?api-version=1.0`,
+    url: `https://login.microsoftonline.com/${azureconfig.tenantId}/oauth2/token?api-version=1.0`,
     body: `grant_type=client_credentials&resource=https%3A%2F%2Fmanagement.core.windows.net%2F&client_id=${azureconfig.clientId}&client_secret=${azureconfig.clientSecret}`,
     headers: {
       'content-type': 'application/x-www-form-urlencoded'
@@ -34,7 +34,7 @@ var getRunbookInfo = function (runbookName) {
     
     getOauthToken(function (token) {
       request.get({
-        url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroups}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/runbooks/${runbookName}?api-version=${azureconfig.apiVersion}`,
+        url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroup}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/runbooks/${runbookName}?api-version=${azureconfig.apiVersion}`,
         headers: {
           'Authorization': token.value,
           'content-type': 'application/json'
@@ -73,7 +73,7 @@ var getListOfRunbooks = function (next, skip = false, runbookNames = false) {
 
   getOauthToken(function (token) {
     request.get({
-      url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroups}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/runbooks?api-version=${azureconfig.apiVersion}${skip}`,
+      url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroup}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/runbooks?api-version=${azureconfig.apiVersion}${skip}`,
       headers: {
         'Authorization': token.value,
         'content-type': 'application/json'
@@ -121,7 +121,7 @@ var saveAsDraft = function (next) {
 
   getOauthToken(function (token) {
     request.put({
-      url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroups}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/runbooks/${runbookName}/draft/content?api-version=${azureconfig.apiVersion}`,
+      url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroup}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/runbooks/${runbookName}/draft/content?api-version=${azureconfig.apiVersion}`,
       headers: {
         'Authorization': token.value,
         'content-type': 'application/json'
@@ -180,7 +180,7 @@ var createAzureRunbook = function (next) {
             'location': 'westeurope'
           }
         request.put({
-          url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroups}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/runbooks/${runbookName}?api-version=${azureconfig.apiVersion}`,
+          url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroup}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/runbooks/${runbookName}?api-version=${azureconfig.apiVersion}`,
           headers: {
             'Authorization': token.value,
             'Content-Type': 'application/json'
@@ -227,7 +227,7 @@ var createLocalRunbook = function (runbookName, existing=false, published=false,
   if (existing) {
     getOauthToken(function (token) {
       request.get({
-        url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroups}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/runbooks/${runbookName}/${publishedV}content?api-version=${azureconfig.apiVersion}`,
+        url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroup}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/runbooks/${runbookName}/${publishedV}content?api-version=${azureconfig.apiVersion}`,
         headers: {
           'Authorization': token.value
         }
@@ -254,7 +254,7 @@ var createLocalRunbook = function (runbookName, existing=false, published=false,
   else if (azureconfig.templateName != "") {
     getOauthToken(function (token) {
       request.get({
-        url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroups}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/runbooks/${azureconfig.templateName}/content?api-version=${azureconfig.apiVersion}`,
+        url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroup}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/runbooks/${azureconfig.templateName}/content?api-version=${azureconfig.apiVersion}`,
         headers: {
           'Authorization': token.value
         }
@@ -305,7 +305,7 @@ var publishRunbook = function (next) {
 
   getOauthToken(function (token) {
     request.post({
-      url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroups}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/runbooks/${runbookName}/draft/publish?api-version=${azureconfig.apiVersion}`,
+      url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroup}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/runbooks/${runbookName}/draft/publish?api-version=${azureconfig.apiVersion}`,
       headers: {
         'Authorization': token.value
       }
@@ -342,7 +342,7 @@ var startPublishedRunbook = function (token, next) {
   jobs.getHybridWorkerGroups(token, function (hybridWorkers) {
     if (!hybridWorkers) {
       request.put({
-        url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroups}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/jobs/${guid}?api-version=${azureconfig.apiVersion}`,
+        url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroup}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/jobs/${guid}?api-version=${azureconfig.apiVersion}`,
         headers: {
           'Authorization': token
         },
@@ -375,7 +375,7 @@ var startPublishedRunbook = function (token, next) {
     .then(function (runOn) {
       if(runOn.detail) {
         request.put({
-          url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroups}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/jobs/${guid}?api-version=${azureconfig.apiVersion}`,
+          url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroup}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/jobs/${guid}?api-version=${azureconfig.apiVersion}`,
           headers: {
             'Authorization': token
           },
@@ -405,7 +405,7 @@ var startPublishedRunbook = function (token, next) {
         })
       } else {
         request.put({
-          url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroups}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/jobs/${guid}?api-version=${azureconfig.apiVersion}`,
+          url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroup}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/jobs/${guid}?api-version=${azureconfig.apiVersion}`,
           headers: {
             'Authorization': token
           },
