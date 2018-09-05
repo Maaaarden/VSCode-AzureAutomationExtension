@@ -138,7 +138,7 @@ function getAssets (token, next) {
   var azureconfig = vscode.workspace.getConfiguration("azureautomation")
 
   request.get({
-    url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroups}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/variables?api-version=${azureconfig.apiVersion}`,
+    url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroup}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/variables?api-version=${azureconfig.apiVersion}`,
     headers: {
       'Authorization': token
     }
@@ -222,7 +222,7 @@ function getCredentials (token, next) {
   var azureconfig = vscode.workspace.getConfiguration("azureautomation")
 
   request.get({
-    url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroups}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/credentials?api-version=${azureconfig.apiVersion}`,
+    url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroup}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/credentials?api-version=${azureconfig.apiVersion}`,
     headers: {
       'Authorization': token
     }
@@ -260,7 +260,7 @@ function getCredentialInfo (token, next, credList) {
   })
   
   request.get({
-    url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroups}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/variables?api-version=${azureconfig.apiVersion}`,
+    url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroup}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/variables?api-version=${azureconfig.apiVersion}`,
     headers: {
       'Authorization': token
     }
@@ -335,7 +335,7 @@ function createAzureVariable (assetType, assetName, assetValue, assetDescription
   // Look here for error solving!!!
   
   request.put({
-    url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroups}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/variables/${assetName}?api-version=${azureconfig.apiVersion}`,
+    url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroup}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/variables/${assetName}?api-version=${azureconfig.apiVersion}`,
     headers: {
       'Authorization': token
     },
@@ -361,7 +361,7 @@ function createAzureVariable (assetType, assetName, assetValue, assetDescription
 
   if(azureconfig.dualVars) {
     request.put({
-      url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroups}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/variables/${assetNameDate}?api-version=${azureconfig.apiVersion}`,
+      url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroup}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/variables/${assetNameDate}?api-version=${azureconfig.apiVersion}`,
       headers: {
         'Authorization': token
       },
@@ -407,7 +407,7 @@ function createAzureCredential (assetName, assetUserName, assetPassword, assetDe
 
   if(azureconfig.dualVars) {
     request.put({
-      url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroups}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/variables/${assetName}?api-version=${azureconfig.apiVersion}`,
+      url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroup}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/variables/${assetName}?api-version=${azureconfig.apiVersion}`,
       headers: {
         'Authorization': token
       },
@@ -427,7 +427,7 @@ function createAzureCredential (assetName, assetUserName, assetPassword, assetDe
   }
   
   request.put({
-    url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroups}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/credentials/${assetNameDate}?api-version=${azureconfig.apiVersion}`,
+    url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroup}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/credentials/${assetNameDate}?api-version=${azureconfig.apiVersion}`,
     headers: {
       'Authorization': token
     },

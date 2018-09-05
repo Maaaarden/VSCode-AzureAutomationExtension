@@ -14,63 +14,63 @@ function activateCommands (context) {
   vscode.window.registerTreeDataProvider('automation-runbooks', RunbookProviderObj)
 
   var updateRunbookProvider = vscode.commands.registerCommand(
-    'extension.updateRunbookProvider', function () {
+    'azureautomation.updateRunbookProvider', function () {
       RunbookProviderObj.refresh()
     }
   )
   context.subscriptions.push(updateRunbookProvider)
 
   var insertNewVariable = vscode.commands.registerCommand(
-    'extension.insertNewVariable', function () {
+    'azureautomation.insertNewVariable', function () {
       Controller.insertNewVariable()
     }
   )
   context.subscriptions.push(insertNewVariable)
 
   var insertNewCredential = vscode.commands.registerCommand(
-    'extension.insertNewCredential', function () {
+    'azureautomation.insertNewCredential', function () {
       Controller.insertNewCredential()
     }
   )
   context.subscriptions.push(insertNewCredential)
 
   var selectAssetVariable = vscode.commands.registerCommand(
-    'extension.selectAssetVariable', function () {
+    'azureautomation.selectAssetVariable', function () {
       Controller.selectAssetVariable()
     }
   )
   context.subscriptions.push(selectAssetVariable)
 
   var selectAssetCredential = vscode.commands.registerCommand(
-    'extension.selectAssetCredential', function () {
+    'azureautomation.selectAssetCredential', function () {
       Controller.selectAssetCredential()
     }
   )
   context.subscriptions.push(selectAssetCredential)
 
   var startPublishedRunbook = vscode.commands.registerCommand(
-    'extension.startPublishedRunbook', function () {
+    'azureautomation.startPublishedRunbook', function () {
       Controller.startPublishedRunbook()
     }
   )
   context.subscriptions.push(startPublishedRunbook)
 
   var saveDraftDisposable = vscode.commands.registerCommand(
-      'extension.saveDraft', function () {
+      'azureautomation.saveDraft', function () {
         Controller.saveDraft(() => {})
       }
   )
   context.subscriptions.push(saveDraftDisposable)
 
   var createNewRunbookDisposable = vscode.commands.registerCommand(
-    'extension.createNewRunbook', function () {
+    'azureautomation.createNewRunbook', function () {
       Controller.createNewRunbook()
     }
   )
   context.subscriptions.push(createNewRunbookDisposable)
 
   var publishRunbookDisposable = vscode.commands.registerCommand(
-    'extension.publishRunbook', function () {
+    'azureautomation.publishRunbook', function () {
       Controller.saveDraft(() => {
         Azure.publishRunbook(() => {
         })
@@ -80,14 +80,14 @@ function activateCommands (context) {
   context.subscriptions.push(publishRunbookDisposable)
 
   var updatePersonalInfoDisposable = vscode.commands.registerCommand(
-    'extension.updatePersonalInfo', function () {
+    'azureautomation.updatePersonalInfo', function () {
       Controller.updatePersonalInfo()
     }
   )
   context.subscriptions.push(updatePersonalInfoDisposable)
 
   var savePublishRunDisposable = vscode.commands.registerCommand(
-    'extension.savePublishAndRun', function () {
+    'azureautomation.savePublishAndRun', function () {
       Controller.saveDraft(() => {
         Azure.publishRunbook(() => {
           Controller.startPublishedRunbook()
@@ -98,7 +98,7 @@ function activateCommands (context) {
   context.subscriptions.push(savePublishRunDisposable)
 
   var openRunbookFromAzureDisposable = vscode.commands.registerCommand(
-    'extension.openRunbookFromAzure', function () {
+    'azureautomation.openRunbookFromAzure', function () {
       Controller.openRunbookFromAzure(() => {
 
       })
@@ -107,7 +107,7 @@ function activateCommands (context) {
   context.subscriptions.push(openRunbookFromAzureDisposable)
 
   var openSpecificRunbookDisposable = vscode.commands.registerCommand(
-    'extension.openSpecificRunbook', function (runbookName, published) {
+    'azureautomation.openSpecificRunbook', function (runbookName, published) {
       Controller.openSpecificRunbook(runbookName, published, () => {
 
       })

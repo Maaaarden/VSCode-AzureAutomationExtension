@@ -71,7 +71,7 @@ function getJobStreams (token, guid, next) {
   var azureconfig = vscode.workspace.getConfiguration("azureautomation")
 
   request.get({
-    url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroups}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/jobs/${guid}/streams?api-version=${azureconfig.apiVersion}`,
+    url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroup}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/jobs/${guid}/streams?api-version=${azureconfig.apiVersion}`,
     headers: {
       'Authorization': token
     }
@@ -94,7 +94,7 @@ function getJobInfo (token, guid, next) {
   var azureconfig = vscode.workspace.getConfiguration("azureautomation")
 
   request.get({
-    url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroups}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/jobs/${guid}?api-version=${azureconfig.apiVersion}`,
+    url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroup}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/jobs/${guid}?api-version=${azureconfig.apiVersion}`,
     headers: {
       'Authorization': token
     }
@@ -125,7 +125,7 @@ var getHybridWorkerGroups = function (token, next) {
   var _ = require('lodash')
 
   request.get({
-    url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroups}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/hybridRunbookWorkerGroups?api-version=${azureconfig.apiVersion}`,
+    url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroup}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/hybridRunbookWorkerGroups?api-version=${azureconfig.apiVersion}`,
     headers: {
       'Authorization': token
     }
