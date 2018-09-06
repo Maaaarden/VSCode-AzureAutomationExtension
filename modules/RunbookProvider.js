@@ -136,7 +136,7 @@ class RunbookProvider {
     switch(node.Level) {
       case 1:
         treeItem.command = {
-          command: 'extension.openSpecificRunbook',
+          command: 'azureautomation.openSpecificRunbook',
           title: '',
           arguments: [treeItem.label, false]
         }
@@ -144,7 +144,7 @@ class RunbookProvider {
       case 2:
         if(node.Name == 'Published' && node.Parent.Published == true) {
           treeItem.command = {
-            command: 'extension.openSpecificRunbook',
+            command: 'azureautomation.openSpecificRunbook',
             title: '',
             arguments: [node.Parent.Name, node.Parent.Published]
           }

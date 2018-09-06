@@ -15,64 +15,91 @@ function activateCommands (context) {
 
   var updateRunbookProvider = vscode.commands.registerCommand(
     'azureautomation.updateRunbookProvider', function () {
-      RunbookProviderObj.refresh()
+      runChecks()
+      .then(() => {
+        RunbookProviderObj.refresh()
+      })
     }
   )
   context.subscriptions.push(updateRunbookProvider)
 
   var insertNewVariable = vscode.commands.registerCommand(
     'azureautomation.insertNewVariable', function () {
-      Controller.insertNewVariable()
+      runChecks()
+      .then(() => {
+        Controller.insertNewVariable()
+      })
     }
   )
   context.subscriptions.push(insertNewVariable)
 
   var insertNewCredential = vscode.commands.registerCommand(
     'azureautomation.insertNewCredential', function () {
-      Controller.insertNewCredential()
+      runChecks()
+      .then(() => {
+        Controller.insertNewCredential()
+      })
     }
   )
   context.subscriptions.push(insertNewCredential)
 
   var selectAssetVariable = vscode.commands.registerCommand(
     'azureautomation.selectAssetVariable', function () {
-      Controller.selectAssetVariable()
+      runChecks()
+      .then(() => {
+        Controller.selectAssetVariable()
+      })
     }
   )
   context.subscriptions.push(selectAssetVariable)
 
   var selectAssetCredential = vscode.commands.registerCommand(
     'azureautomation.selectAssetCredential', function () {
-      Controller.selectAssetCredential()
+      runChecks()
+      .then(() => {
+        Controller.selectAssetCredential()
+      })
     }
   )
   context.subscriptions.push(selectAssetCredential)
 
   var startPublishedRunbook = vscode.commands.registerCommand(
     'azureautomation.startPublishedRunbook', function () {
-      Controller.startPublishedRunbook()
+      runChecks()
+      .then(() => {
+        Controller.startPublishedRunbook()
+      })
     }
   )
   context.subscriptions.push(startPublishedRunbook)
 
   var saveDraftDisposable = vscode.commands.registerCommand(
       'azureautomation.saveDraft', function () {
-        Controller.saveDraft(() => {})
+        runChecks()
+        .then(() => {
+          Controller.saveDraft(() => {})
+        })
       }
   )
   context.subscriptions.push(saveDraftDisposable)
 
   var createNewRunbookDisposable = vscode.commands.registerCommand(
     'azureautomation.createNewRunbook', function () {
-      Controller.createNewRunbook()
+      runChecks()
+      .then(() => {
+        Controller.createNewRunbook()
+      })
     }
   )
   context.subscriptions.push(createNewRunbookDisposable)
 
   var publishRunbookDisposable = vscode.commands.registerCommand(
     'azureautomation.publishRunbook', function () {
-      Controller.saveDraft(() => {
-        Azure.publishRunbook(() => {
+      runChecks()
+      .then(() => {
+        Controller.saveDraft(() => {
+          Azure.publishRunbook(() => {
+          })
         })
       })
     }
@@ -81,16 +108,22 @@ function activateCommands (context) {
 
   var updatePersonalInfoDisposable = vscode.commands.registerCommand(
     'azureautomation.updatePersonalInfo', function () {
-      Controller.updatePersonalInfo()
+      runChecks()
+      .then(() => {
+        Controller.updatePersonalInfo()
+      })
     }
   )
   context.subscriptions.push(updatePersonalInfoDisposable)
 
   var savePublishRunDisposable = vscode.commands.registerCommand(
     'azureautomation.savePublishAndRun', function () {
-      Controller.saveDraft(() => {
-        Azure.publishRunbook(() => {
-          Controller.startPublishedRunbook()
+      runChecks()
+      .then(() => {
+        Controller.saveDraft(() => {
+          Azure.publishRunbook(() => {
+            Controller.startPublishedRunbook()
+          })
         })
       })
     }
@@ -99,8 +132,10 @@ function activateCommands (context) {
 
   var openRunbookFromAzureDisposable = vscode.commands.registerCommand(
     'azureautomation.openRunbookFromAzure', function () {
-      Controller.openRunbookFromAzure(() => {
-
+      runChecks()
+      .then(() => {
+        Controller.openRunbookFromAzure(() => {
+        })
       })
     }
   )
@@ -108,14 +143,29 @@ function activateCommands (context) {
 
   var openSpecificRunbookDisposable = vscode.commands.registerCommand(
     'azureautomation.openSpecificRunbook', function (runbookName, published) {
-      Controller.openSpecificRunbook(runbookName, published, () => {
-
+      runChecks()
+      .then(() => {
+        Controller.openSpecificRunbook(runbookName, published, () => {
+        })
       })
     }
   )
   context.subscriptions.push(openSpecificRunbookDisposable)
   
   //var treeView = vscode.window.createTreeView('automation-runbooks', { treeDataProvider: RunbookProvider } )
+}
+
+function runChecks() {
+  return new Promise((resolve, reject) => {
+    Promise.all([
+      checkForSettings(),
+      checkForWorkspace()
+    ]).then(() => {
+      resolve()
+    }).catch(() => {
+      reject()
+    })
+  })
 }
 
 function checkForWorkspace () {
@@ -130,16 +180,27 @@ function checkForWorkspace () {
   })
 }
 
+function checkForSettings () {
+  var azureconfig = vscode.workspace.getConfiguration("azureautomation")
+  return new Promise((resolve, reject) => {
+    if(azureconfig.subscriptionId == "" || azureconfig.tenantId == "" || azureconfig.clientId == "" || azureconfig.clientSecret == "" || azureconfig.automationAccount == "" || azureconfig.resourceGroup == "" ) {
+      vscode.window.showErrorMessage('Please input all of the following, under Azure Automation Configuration: TentantID, SubscriptionID, ClientID, ClientSecret, Automation Account and Resource Group')
+      reject()
+    } else {
+      resolve()
+    }
+  })
+}
+
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 function activate (context) {
   // Use the console to output diagnostic information (console.log) and errors (console.error)
   // This line of code will only be executed once when your extension is activated
-  checkForWorkspace()
-  .then(() => {
-    activateCommands(context)
-  })
-  console.log('Congratulations, your extension azureautomation is now active!')
+
+      activateCommands(context)
+      console.log('Congratulations, your extension azureautomation is now active!')
+
 }
 exports.activate = activate
 
