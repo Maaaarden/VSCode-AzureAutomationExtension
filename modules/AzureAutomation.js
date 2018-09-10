@@ -7,16 +7,21 @@
 var getOauthToken = function (next) {
   var vscode = require('vscode')
   var request = require('request')
+  var _ = require('lodash')
   var azureconfig = vscode.workspace.getConfiguration("azureautomation")
 
+  var clientSecret = _.replace(azureconfig.clientSecret, new RegExp('\\+','g'),'%2B')
+
+  console.log(clientSecret)
   request({
     url: `https://login.microsoftonline.com/${azureconfig.tenantId}/oauth2/token?api-version=1.0`,
-    body: `grant_type=client_credentials&resource=https%3A%2F%2Fmanagement.core.windows.net%2F&client_id=${azureconfig.clientId}&client_secret=${azureconfig.clientSecret}`,
+    body: `grant_type=client_credentials&resource=https%3A%2F%2Fmanagement.core.windows.net%2F&client_id=${azureconfig.clientId}&client_secret=${clientSecret}`,
     headers: {
       'content-type': 'application/x-www-form-urlencoded'
     }
   }, function (error, response, body) {
     if (error) {
+      console.log("error")
       return vscode.window.showErrorMessage('Could not get OAuth Token!')
     }
     var bodyParsed = JSON.parse(body)
@@ -41,9 +46,11 @@ var getRunbookInfo = function (runbookName) {
         }
       }, function (error, response, body) {
         if (error) {
-          console.log(error)
           return vscode.window.showErrorMessage('Could not get list of Runbooks from Azure Automation!')
         }
+
+        console.log(response)
+
         var bodyParsed = JSON.parse(body)
 
         resolve(bodyParsed)
