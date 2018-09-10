@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to the "azureautomation" extension will be documented in this file.
 
+## [0.8.0] - 2018-09-10
+### Fixed
+ - Fixed an issue with the character '+' in clientSecret, causing user to not get an oAuth token.
+ 
 ## [0.7.2] - 2018-09-06
 ### Added
  - Added functionality to check for settings before each command, to ensure all relevant settings have been filled
