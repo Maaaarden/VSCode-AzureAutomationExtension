@@ -12,7 +12,6 @@ var getOauthToken = function (next) {
 
   var clientSecret = _.replace(azureconfig.clientSecret, new RegExp('\\+','g'),'%2B')
 
-  console.log(clientSecret)
   request({
     url: `https://login.microsoftonline.com/${azureconfig.tenantId}/oauth2/token?api-version=1.0`,
     body: `grant_type=client_credentials&resource=https%3A%2F%2Fmanagement.core.windows.net%2F&client_id=${azureconfig.clientId}&client_secret=${clientSecret}`,
@@ -21,7 +20,6 @@ var getOauthToken = function (next) {
     }
   }, function (error, response, body) {
     if (error) {
-      console.log("error")
       return vscode.window.showErrorMessage('Could not get OAuth Token!')
     }
     var bodyParsed = JSON.parse(body)
