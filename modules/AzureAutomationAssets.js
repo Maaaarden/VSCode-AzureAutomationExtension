@@ -92,7 +92,7 @@ var newAssetCredential = function (token) {
               stringSnip = '\\$containerVariable = Get-AutomationVariable -Name \'' + assetName + '\'\n'
               stringSnip += '\\$${1:var} = Get-AutomationPSCredential -Name \\$containerVariable\n'
             } else {
-              stringSnip = '\\$${1:var} = Get-AutomationpPSCredential -Name \'' + assetName + '\'\n'
+              stringSnip = '\\$${1:var} = Get-AutomationPSCredential -Name \'' + assetName + '\'\n'
             }
             stringSnip += '\n'
             stringSnip += '${0:}'
