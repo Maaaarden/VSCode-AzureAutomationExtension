@@ -47,8 +47,6 @@ var getRunbookInfo = function (runbookName) {
           return vscode.window.showErrorMessage('Could not get list of Runbooks from Azure Automation!')
         }
 
-        console.log(response)
-
         var bodyParsed = JSON.parse(body)
 
         resolve(bodyParsed)
@@ -144,7 +142,6 @@ var saveAsDraft = function (next) {
       } else if (response.statusCode === 404) {
         return next({ success: false, reason: 'Runbook does not exist in Azure' })
       } else {
-        console.log(body)
         return vscode.window.showErrorMessage('An error accoured while trying to save the draft in Azure Cloud.')
       }
     })
