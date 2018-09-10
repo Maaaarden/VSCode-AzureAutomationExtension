@@ -38,7 +38,7 @@ const createNewRunbook = function () {
             Azure.createAzureRunbook(function () {
               Azure.saveAsDraft(function () {
                 setTimeout(function () {
-                  vscode.commands.executeCommand('extension.updateRunbookProvider')
+                  vscode.commands.executeCommand('azureautomation.updateRunbookProvider')
                 }, 2000)
               })
             })
@@ -62,7 +62,7 @@ const openRunbookFromAzure = function () {
             if(rbInfo.properties.state == 'New') {
               Azure.createLocalRunbook(runbookName, true, false, function() {
                 setTimeout(function () {
-                  vscode.commands.executeCommand('extension.updateRunbookProvider')
+                  vscode.commands.executeCommand('azureautomation.updateRunbookProvider')
                 }, 2000)
               })
             } else {
@@ -71,7 +71,7 @@ const openRunbookFromAzure = function () {
                 let draft = pick == 'Draft' ? true : false
                 Azure.createLocalRunbook(runbookName, true, draft, function () {
                   setTimeout(function () {
-                    vscode.commands.executeCommand('extension.updateRunbookProvider')
+                    vscode.commands.executeCommand('azureautomation.updateRunbookProvider')
                   }, 2000)
                 })
               })
