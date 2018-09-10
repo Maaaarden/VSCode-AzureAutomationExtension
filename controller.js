@@ -17,7 +17,7 @@ const saveDraft = function (next) {
         // Try and save again.
         Azure.saveAsDraft(function () {
           setTimeout(function () {
-            vscode.commands.executeCommand('extension.updateRunbookProvider')
+            vscode.commands.executeCommand('azureatuomation.updateRunbookProvider')
           }, 2000)
           return next()
         })
