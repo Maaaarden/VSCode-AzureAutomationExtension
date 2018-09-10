@@ -184,7 +184,7 @@ function checkForSettings () {
   var azureconfig = vscode.workspace.getConfiguration("azureautomation")
   return new Promise((resolve, reject) => {
     if(azureconfig.subscriptionId == "" || azureconfig.tenantId == "" || azureconfig.clientId == "" || azureconfig.clientSecret == "" || azureconfig.automationAccount == "" || azureconfig.resourceGroup == "" ) {
-      vscode.window.showErrorMessage('Please input all of the following, under Azure Automation Configuration: TentantID, SubscriptionID, ClientID, ClientSecret, Automation Account and Resource Group')
+      vscode.window.showErrorMessage('Please input all of the following, under Azure Automation Configuration: TenantID, SubscriptionID, ClientID, ClientSecret, Automation Account and Resource Group')
       reject()
     } else {
       resolve()
