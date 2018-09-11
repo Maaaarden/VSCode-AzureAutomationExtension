@@ -57,6 +57,8 @@ Will execute the published version of runbook open in editor
 Create a new variable or credential asset.
 Based on the 'DualVars' setting, this will either create 1 or 2 assets. Insterting code into your runbook automatically
 
+![New asset](https://github.com/Maaaarden/VSCode-AzureAutomationExtension/raw/master/resources/newasset.gif)
+
 ### Insert Azure variable / credential asset
 Insert an existing variable or credential asset.
 Based on the 'DualVars' setting, this will either use 1 or 2 assets. Insterting code into your runbook automatically
