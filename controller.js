@@ -29,23 +29,26 @@ const saveDraft = function (next) {
 }
 
 const createNewRunbook = function () {
-  vscode.window.showInputBox({prompt: 'Name of your Runbook. (Without the .ps1 extension)'})
+  vscode.window.showInputBox({prompt: 'Name of your Runbook.'})
   .then(runbookName => {
     if(runbookName != undefined) {
-      Azure.doesRunbookExist(runbookName, function (runbookExist) {
-        if (!runbookExist) {
-          Azure.createLocalRunbook(runbookName, undefined, undefined, function () {
-            Azure.createAzureRunbook(function () {
-              Azure.saveAsDraft(function () {
-                setTimeout(function () {
-                  vscode.commands.executeCommand('azureautomation.updateRunbookProvider')
-                }, 2000)
+      vscode.window.showQuickPick(['PowerShell', 'Python2'])
+      .then(runbookType => {
+        Azure.doesRunbookExist(runbookName, function (runbookExist) {
+          if (!runbookExist) {
+            Azure.createLocalRunbook(runbookName, runbookType, undefined, undefined, function () {
+              Azure.createAzureRunbook(runbookType, function () {
+                Azure.saveAsDraft(runbookType, function () {
+                  setTimeout(function () {
+                    vscode.commands.executeCommand('azureautomation.updateRunbookProvider')
+                  }, 2000)
+                })
               })
             })
-          })
-        } else {
-          vscode.window.showErrorMessage('The provided Runbook name already exists in Azure Cloud')
-        }
+          } else {
+            vscode.window.showErrorMessage('The provided Runbook name already exists in Azure Cloud')
+          }
+        })
       })
     }
   })
@@ -83,10 +86,10 @@ const openRunbookFromAzure = function () {
   })
 }
 
-const openSpecificRunbook = function (runbookName, published) {
+const openSpecificRunbook = function (runbookName, runbookType, published) {
   Azure.doesRunbookExist(runbookName, function (runbookExist) {
     if(runbookExist) {
-      Azure.createLocalRunbook(runbookName, true, published, function () {
+      Azure.createLocalRunbook(runbookName, runbookType, true, published, function () {
       })
     }
   })
