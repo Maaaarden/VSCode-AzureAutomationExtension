@@ -34,6 +34,7 @@ A list of the functionality available in this extension
  - Insert Azure credential asset
 
 ### Create Runbook
+Types supported: PowerShell and Python2
 Create a new runbook in your defined Azure Automation account.
 Support for a template is possible. Under 'User Settings' just input the name of your template runbook, and any new runbook created through this extension, will be prefilled with the same content as that template runbook.
 If you leave the name blank, a blank runbook will be created.

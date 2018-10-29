@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to the "azureautomation" extension will be documented in this file.
 
+## [0.9.0] - 2018-10-29
+### Added
+ - Added support for Python2 runbooks. Create, Save Draft, Publish and run.
+   Variable/Credential insert commands not supported.
+
 ## [0.8.0] - 2018-09-10
 ### Fixed
  - Fixed an issue with the character '+' in clientSecret, causing user to not get an oAuth token.
