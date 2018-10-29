@@ -55,6 +55,7 @@ class RunbookProvider {
             if(rbInfo.properties.state != 'New') {
               jsonPayload.Children.find(x => x == jsonObj).Children.unshift({"Name": "Published", "Level": 2, "Parent": jsonPayload.Children.find(x => x == jsonObj)})  
             }
+            //jsonPayload.Children.find(x => x == jsonObj).unshift({"RunbookType": rbInfo.properties.runbookType})
             //jsonPayload.Children.find(x => x == jsonObj).Published = rbInfo.properties.state != 'New' ? true : false
             let tagsArray = Object.getOwnPropertyNames(rbInfo.tags)
             if(rbInfo.tags == null || tagsArray.length == 0) {
@@ -88,27 +89,32 @@ class RunbookProvider {
       Azure.getListOfRunbooks(function (runbookList) {
         let i = 0
         _.forEach(runbookList, function(runbookObject) {
-          jsonPayload.Children[i] = {
-            "Name": runbookObject,
-            "Level": 1,
-            "Parent": jsonPayload,
-            "Published": false,
-            "Children": [
-              //{
-              //  "Name": "Published",
-              //  "Level": 2
-              //},
-              {
-                "Name": "Tags",
-                "Level": 2
-              }
-            ]
-          }
-          jsonPayload.Children[i].Children[0].Parent = jsonPayload.Children[i]
-          //jsonPayload.Children[i].Children[1].Parent = jsonPayload.Children[i]
-          i++
+          Azure.getRunbookInfo(runbookObject)
+          .then(rbInfo => {
+            jsonPayload.Children[i] = {
+              "Name": runbookObject,
+              "Level": 1,
+              "Parent": jsonPayload,
+              "Published": false,
+              "RunbookType": rbInfo.properties.runbookType,
+              "Children": [
+                //{
+                //  "Name": "Published",
+                //  "Level": 2
+                //},
+                {
+                  "Name": "Tags",
+                  "Level": 2
+                }
+              ]
+            }
+            jsonPayload.Children[i].Children[0].Parent = jsonPayload.Children[i]
+            //jsonPayload.Children[i].Children[1].Parent = jsonPayload.Children[i]
+            i++
+            if(i === runbookList.length - 1) resolve(jsonPayload)
+          })
         })
-        resolve(jsonPayload)
+        
       })
     })
   }
@@ -138,7 +144,7 @@ class RunbookProvider {
         treeItem.command = {
           command: 'azureautomation.openSpecificRunbook',
           title: '',
-          arguments: [treeItem.label, false]
+          arguments: [treeItem.label, node.RunbookType, false]
         }
         break;
       case 2:
@@ -146,7 +152,7 @@ class RunbookProvider {
           treeItem.command = {
             command: 'azureautomation.openSpecificRunbook',
             title: '',
-            arguments: [node.Parent.Name, node.Parent.Published]
+            arguments: [node.Parent.Name, node.RunbookType, node.Parent.Published]
           }
         } else if (node.Parent.published == false) {
           

@@ -119,7 +119,13 @@ var saveAsDraft = function (next) {
     return vscode.window.showWarningMessage('Please save your runbook locally before saving to Azure.')
   }
   // First splits the string on '\', second takes the last value in the array, finally replaces '.ps1' with nothing (removes it).
-  var runbookName = _.replace(_.last(_.split(document.fileName, '\\')), '.ps1', '')
+  var rbPath = _.last(_.split(document.fileName, '\\'))
+  var runbookName = rbPath.substr(0, rbPath.lastIndexOf('.'))
+  /**if(runbookType == 'PowerShell') {
+    var runbookName = _.replace(_.last(_.split(document.fileName, '\\')), '.ps1', '')
+  } else if(runbookType == 'Python2') {
+    var runbookName = _.replace(_.last(_.split(document.fileName, '\\')), '.py', '')
+  }*/
   var fileText = document.getText()
 
   getOauthToken(function (token) {
@@ -152,13 +158,19 @@ var saveAsDraft = function (next) {
  * Creates a new runbook in Azure unpublished.
  * @param   {Function}  next    Callback function
  */
-var createAzureRunbook = function (next) {
+var createAzureRunbook = function (runbookType ,next) {
   var vscode = require('vscode')
   var request = require('request')
   var azureconfig = vscode.workspace.getConfiguration("azureautomation")
   var _ = require('lodash')
   var document = vscode.window.activeTextEditor.document
-  var runbookName = _.replace(_.last(_.split(document.fileName, '\\')), '.ps1', '')
+  /**if(runbookType == 'PowerShell') {
+    var runbookName = _.replace(_.last(_.split(document.fileName, '\\')), '.ps1', '')
+  } else if(runbookType == 'Python2') {
+    var runbookName = _.replace(_.last(_.split(document.fileName, '\\')), '.py', '')
+  }*/
+  var rbPath = _.last(_.split(document.fileName, '\\'))
+  var runbookName = rbPath.substr(0, rbPath.lastIndexOf('.'))
 
   if (document.isUntitled) {
     return vscode.window.showErrorMessage('Please save your runbook locally before saving to Azure.')
@@ -174,7 +186,7 @@ var createAzureRunbook = function (next) {
               'CreatedFrom': 'VSCode Extension'
             },
             'properties': {
-              'runbookType': 'PowerShell',
+              'runbookType': runbookType,
               'draft': {
                 'inEdit': false
               }
@@ -198,6 +210,7 @@ var createAzureRunbook = function (next) {
             //vscode.window.showInformationMessage('Runbook created in Azure Cloud.')
             return next()
           } else {
+            console.log(body)
             return vscode.window.showErrorMessage('Could not create Runbook in Azure Cloud..')
           }
         })
@@ -212,7 +225,7 @@ var createAzureRunbook = function (next) {
  * @param   {String}    runbookName The name of the runbook you wish to create.
  * @param   {Function}  next        Callback function
  */
-var createLocalRunbook = function (runbookName, existing=false, published=false, next) {
+var createLocalRunbook = function (runbookName, runbookType, existing=false, published=false, next) {
   var vscode = require('vscode')
   var request = require('request')
   var azureconfig = vscode.workspace.getConfiguration("azureautomation")
@@ -238,7 +251,11 @@ var createLocalRunbook = function (runbookName, existing=false, published=false,
           console.log(error)
           return vscode.window.showErrorMessage('Could not get runbook from Azure Cloud.')
         }
-        var path = vscode.workspace.rootPath + `\\${runbookName}.ps1`
+        if(runbookType == 'PowerShell') {
+          var path = vscode.workspace.rootPath + `\\${runbookName}.ps1`
+        } else if(runbookType == 'Python2') {
+          var path = vscode.workspace.rootPath + `\\${runbookName}.py`
+        }
         Q.fcall(function () {
           fs.writeFile(path, body)
         })
@@ -265,7 +282,11 @@ var createLocalRunbook = function (runbookName, existing=false, published=false,
           console.log(error)
           return vscode.window.showErrorMessage('Could not get template from Azure Cloud.')
         }
-        var path = vscode.workspace.rootPath + `\\${runbookName}.ps1`
+        if(runbookType == 'PowerShell') {
+          var path = vscode.workspace.rootPath + `\\${runbookName}.ps1`
+        } else if(runbookType == 'Python2') {
+          var path = vscode.workspace.rootPath + `\\${runbookName}.py`
+        }
         Q.fcall(function () {
           fs.writeFile(path, body)
         })
@@ -280,7 +301,11 @@ var createLocalRunbook = function (runbookName, existing=false, published=false,
       })
     })
   } else {
-    var path = vscode.workspace.rootPath + `\\${runbookName}.ps1`
+    if(runbookType == 'PowerShell') {
+      var path = vscode.workspace.rootPath + `\\${runbookName}.ps1`
+    } else if(runbookType == 'Python2') {
+      var path = vscode.workspace.rootPath + `\\${runbookName}.py`
+    }
     Q.fcall(function () {
       fs.writeFile(path, "")
     })
@@ -303,7 +328,14 @@ var publishRunbook = function (next) {
   var document = vscode.window.activeTextEditor.document
 
   // First splits the string on '\', second takes the last value in the array, finally replaces '.ps1' with nothing (removes it).
-  var runbookName = _.replace(_.last(_.split(document.fileName, '\\')), '.ps1', '')
+  /**
+  if(runbookType == 'PowerShell') {
+    var runbookName = _.replace(_.last(_.split(document.fileName, '\\')), '.ps1', '')
+  } else if(runbookType == 'Python2') {
+    var runbookName = _.replace(_.last(_.split(document.fileName, '\\')), '.py', '')
+  }*/
+  var rbPath = _.last(_.split(document.fileName, '\\'))
+  var runbookName = rbPath.substr(0, rbPath.lastIndexOf('.'))
 
   getOauthToken(function (token) {
     request.post({
@@ -340,7 +372,9 @@ var startPublishedRunbook = function (token, next) {
   var guid = createGuid()
   var _ = require('lodash')
 
-  var runbookName = _.replace(_.last(_.split(vscode.window.activeTextEditor.document.fileName, '\\')), '.ps1', '')
+  //var runbookName = _.replace(_.last(_.split(vscode.window.activeTextEditor.document.fileName, '\\')), '.ps1', '')
+  var rbPath = _.last(_.split(vscode.windows.activeTextEditor.document.fileName, '\\'))
+  var runbookName = rbPath.substr(0, rbPath.lastIndexOf('.'))
   jobs.getHybridWorkerGroups(token, function (hybridWorkers) {
     if (!hybridWorkers) {
       request.put({
