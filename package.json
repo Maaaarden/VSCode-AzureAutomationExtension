@@ -2,7 +2,7 @@
     "name": "azureautomation",
     "displayName": "Azure Automation",
     "description": "Work locally, against Azure Automation subscription.",
-    "version": "0.9.0",
+    "version": "0.8.1",
     "publisher": "AwesomeAutomationTeam",
     "engines": {
         "vscode": "^1.24.1"
@@ -160,7 +160,7 @@
                 {
                     "id": "automation-explorer",
                     "title": "Automation Explorer",
-                    "icon": "resources/automation.svg"
+                    "icon": "resources/automation2.svg"
                 }
             ]
         },
