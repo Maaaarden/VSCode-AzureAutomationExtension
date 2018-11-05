@@ -63,7 +63,7 @@ const openRunbookFromAzure = function () {
           Azure.getRunbookInfo(runbookName)
           .then(rbInfo => {
             if(rbInfo.properties.state == 'New') {
-              Azure.createLocalRunbook(runbookName, true, false, function() {
+              Azure.createLocalRunbook(runbookName, rbInfo.properties.runbookType, true, false, function() {
                 setTimeout(function () {
                   vscode.commands.executeCommand('azureautomation.updateRunbookProvider')
                 }, 2000)
@@ -72,7 +72,7 @@ const openRunbookFromAzure = function () {
               vscode.window.showQuickPick(['Published', 'Draft'])
               .then(pick => {
                 let draft = pick == 'Draft' ? true : false
-                Azure.createLocalRunbook(runbookName, true, draft, function () {
+                Azure.createLocalRunbook(runbookName, rbInfo.properties.runbookType, true, draft, function () {
                   setTimeout(function () {
                     vscode.commands.executeCommand('azureautomation.updateRunbookProvider')
                   }, 2000)
@@ -89,7 +89,10 @@ const openRunbookFromAzure = function () {
 const openSpecificRunbook = function (runbookName, runbookType, published) {
   Azure.doesRunbookExist(runbookName, function (runbookExist) {
     if(runbookExist) {
-      Azure.createLocalRunbook(runbookName, runbookType, true, published, function () {
+      Azure.getRunbookInfo(runbookName)
+      .then(runbookInfo => {
+          Azure.createLocalRunbook(runbookName, runbookInfo.properties.runbookType, true, published, function () {
+        })
       })
     }
   })

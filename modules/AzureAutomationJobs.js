@@ -134,7 +134,7 @@ var getHybridWorkerGroups = function (token, next) {
       console.log(error)
       vscode.window.showErrorMessage('Error fetching hybrid worker groups.')
     } else if (response.statusCode === 200) {
-      bodyParsed = JSON.parse(body)
+      var bodyParsed = JSON.parse(body)
       if ((bodyParsed.value).length === 0) {
         // console.log('No hybridworkers')
         vscode.window.showInformationMessage('No HybridWorkers found, running job in Azure')
