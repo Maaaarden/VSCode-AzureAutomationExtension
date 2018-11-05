@@ -143,7 +143,7 @@ function getAssets (token, next) {
       'Authorization': token
     }
   }, function (error, response, body) {
-    if (error) {
+    if (error || response.statusCode != 200 && response.statusCode != 201) {
 
     } else if (response.statusCode === 200) {
       var bodyParsed = JSON.parse(body)
@@ -227,7 +227,7 @@ function getCredentials (token, next) {
       'Authorization': token
     }
   }, function (error, response, body) {
-    if (error) {
+    if (error || response.statusCode != 200 && response.statusCode != 201) {
 
     } else if (response.statusCode === 200) {
       var returnCredentials = []
@@ -265,7 +265,7 @@ function getCredentialInfo (token, next, credList) {
       'Authorization': token
     }
   }, function (error, response, body) {
-    if (error) {
+    if (error || response.statusCode != 200 && response.statusCode != 201) {
 
     } else if (response.statusCode === 200) {
       var bodyParsed = JSON.parse(body)
@@ -348,7 +348,7 @@ function createAzureVariable (assetType, assetName, assetValue, assetDescription
       }
     }
   }, function (error, response, body) {
-    if (error) {
+    if (error || response.statusCode != 200 && response.statusCode != 201) {
       vscode.window.showErrorMessage('Error creating your asset in Azure.')
     } else if (response.statusCode === 201) {
       if(!azureconfig.dualVars) {
@@ -374,7 +374,7 @@ function createAzureVariable (assetType, assetName, assetValue, assetDescription
         }
       }
     }, function (error, response, body) {
-      if (error) {
+      if (error || response.statusCode != 200 && response.statusCode != 201) {
         vscode.window.showErrorMessage('Error creating your asset in Azure.')
       } else if (response.statusCode === 201) {
         next()
@@ -420,7 +420,7 @@ function createAzureCredential (assetName, assetUserName, assetPassword, assetDe
         }
       }
     }, function (error, response, body) {
-      if (error) {
+      if (error || response.statusCode != 200 && response.statusCode != 201) {
         vscode.window.showErrorMessage('Error creating your asset in Azure.')
       }
     })
@@ -439,7 +439,7 @@ function createAzureCredential (assetName, assetUserName, assetPassword, assetDe
       }
     }
   }, function (error, response, body) {
-    if (error) {
+    if (error || response.statusCode != 200 && response.statusCode != 201) {
       vscode.window.showErrorMessage('Error creating your asset in Azure.')
     } else if (response.statusCode === 201) {
       next()

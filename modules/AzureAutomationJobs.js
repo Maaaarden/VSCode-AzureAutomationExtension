@@ -99,7 +99,7 @@ function getJobInfo (token, guid, next) {
       'Authorization': token
     }
   }, function (error, response, body) {
-    if (error) {
+    if (error || response.statusCode != 200 && response.statusCode != 201) {
     }
     if (response.statusCode === 200) {
       body = JSON.parse(body)
@@ -130,8 +130,9 @@ var getHybridWorkerGroups = function (token, next) {
       'Authorization': token
     }
   }, function (error, response, body) {
-    if (error) {
-
+    if (error || response.statusCode != 200 && response.statusCode != 201) {
+      console.log(error)
+      vscode.window.showErrorMessage('Error fetching hybrid worker groups.')
     } else if (response.statusCode === 200) {
       bodyParsed = JSON.parse(body)
       if ((bodyParsed.value).length === 0) {

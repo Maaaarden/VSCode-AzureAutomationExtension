@@ -19,7 +19,8 @@ var getOauthToken = function (next) {
       'content-type': 'application/x-www-form-urlencoded'
     }
   }, function (error, response, body) {
-    if (error) {
+    if (error || response.statusCode != 200 && response.statusCode != 201) {
+      console.log(error)
       return vscode.window.showErrorMessage('Could not get OAuth Token!')
     }
     var bodyParsed = JSON.parse(body)
@@ -43,7 +44,8 @@ var getRunbookInfo = function (runbookName) {
           'content-type': 'application/json'
         }
       }, function (error, response, body) {
-        if (error) {
+        if (error || response.statusCode != 200 && response.statusCode != 201) {
+          console.log(error)
           return vscode.window.showErrorMessage('Could not get list of Runbooks from Azure Automation!')
         }
 
@@ -82,7 +84,7 @@ var getListOfRunbooks = function (next, skip = false, runbookNames = false) {
         'content-type': 'application/json'
       }
     }, function (error, response, body) {
-      if (error) {
+      if (error || response.statusCode != 200 && response.statusCode != 201) {
         console.log(error)
         return vscode.window.showErrorMessage('Could not get list of Runbook from Azure Automation!')
       }
@@ -137,7 +139,7 @@ var saveAsDraft = function (next) {
       },
       body: fileText
     }, function (error, response, body) {
-      if (error) {
+      if (error || response.statusCode != 200 && response.statusCode != 201) {
         console.log(error)
         return vscode.window.showErrorMessage('An error accoured while trying to save the draft in Azure Cloud.')
       }
@@ -201,7 +203,7 @@ var createAzureRunbook = function (runbookType ,next) {
           },
           json: requestData
         }, function (error, response, body) {
-          if (error) {
+          if (error || response.statusCode != 200 && response.statusCode != 201) {
             console.log(error)
             return vscode.window.showErrorMessage('An error occured while trying to create the runbook in Azure Cloud.')
           }
@@ -247,7 +249,7 @@ var createLocalRunbook = function (runbookName, runbookType, existing=false, pub
           'Authorization': token.value
         }
       }, function (error, response, body) {
-        if (error) {
+        if (error || response.statusCode != 200 && response.statusCode != 201) {
           console.log(error)
           return vscode.window.showErrorMessage('Could not get runbook from Azure Cloud.')
         }
@@ -278,7 +280,7 @@ var createLocalRunbook = function (runbookName, runbookType, existing=false, pub
           'Authorization': token.value
         }
       }, function (error, response, body) {
-        if (error) {
+        if (error || response.statusCode != 200 && response.statusCode != 201) {
           console.log(error)
           return vscode.window.showErrorMessage('Could not get template from Azure Cloud.')
         }
@@ -344,7 +346,7 @@ var publishRunbook = function (next) {
         'Authorization': token.value
       }
     }, function (error, response, body) {
-      if (error) {
+      if (error || response.statusCode != 200 && response.statusCode != 201) {
         console.log(error)
         return vscode.window.showErrorMessage('An error accoured while trying to save the draft in Azure Cloud.')
       }
