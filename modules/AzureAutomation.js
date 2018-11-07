@@ -10,11 +10,11 @@ var getOauthToken = function (next) {
   var _ = require('lodash')
   var azureconfig = vscode.workspace.getConfiguration("azureautomation")
 
-  var clientSecret = _.replace(azureconfig.clientSecret, new RegExp('\\+','g'),'%2B')
-
+  //var clientSecret = _.replace(azureconfig.clientSecret, new RegExp('\\+','g'),'%2B')
+  var clientSecret = azureconfig.clientSecret
   request({
     url: `https://login.microsoftonline.com/${azureconfig.tenantId}/oauth2/token?api-version=1.0`,
-    body: `grant_type=client_credentials&resource=https%3A%2F%2Fmanagement.core.windows.net%2F&client_id=${azureconfig.clientId}&client_secret=${clientSecret}`,
+    body: `grant_type=client_credentials&resource=https%3A%2F%2Fmanagement.core.windows.net%2F&client_id=${encodeURIComponent(azureconfig.clientId)}&client_secret=${encodeURIComponent(clientSecret)}`,
     headers: {
       'content-type': 'application/x-www-form-urlencoded'
     }
