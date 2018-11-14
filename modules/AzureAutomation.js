@@ -375,7 +375,7 @@ var startPublishedRunbook = function (token, next) {
   var _ = require('lodash')
 
   //var runbookName = _.replace(_.last(_.split(vscode.window.activeTextEditor.document.fileName, '\\')), '.ps1', '')
-  var rbPath = _.last(_.split(vscode.windows.activeTextEditor.document.fileName, '\\'))
+  var rbPath = _.last(_.split(vscode.window.activeTextEditor.document.fileName, '\\'))
   var runbookName = rbPath.substr(0, rbPath.lastIndexOf('.'))
   jobs.getHybridWorkerGroups(token, function (hybridWorkers) {
     if (!hybridWorkers) {
