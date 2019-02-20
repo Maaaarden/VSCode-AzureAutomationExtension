@@ -187,7 +187,9 @@ function checkForSettings () {
       vscode.window.showErrorMessage('Please input all of the following, under Azure Automation Configuration: TenantID, SubscriptionID, ClientID, ClientSecret, Automation Account and Resource Group')
       reject()
     } else {
-      resolve()
+      Azure.getOauthToken(function() {
+        Azure.getListOfRunbooks(resolve())
+      })
     }
   })
 }

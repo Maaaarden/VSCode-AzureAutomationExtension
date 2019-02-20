@@ -21,7 +21,7 @@ var getOauthToken = function (next) {
   }, function (error, response, body) {
     if (error || response.statusCode != 200 && response.statusCode != 201 && response.statusCode != 202) {
       console.log(body)
-      return vscode.window.showErrorMessage('Could not get OAuth Token!')
+      return vscode.window.showErrorMessage('Could not get OAuth Token! Error:' + error)
     }
     var bodyParsed = JSON.parse(body)
     var token = bodyParsed.access_token
@@ -46,7 +46,8 @@ var getRunbookInfo = function (runbookName) {
       }, function (error, response, body) {
         if (error || response.statusCode != 200 && response.statusCode != 201 && response.statusCode != 202) {
           console.log(body)
-          return vscode.window.showErrorMessage('Could not get list of Runbooks from Azure Automation!')
+          console.log(response)
+          return vscode.window.showErrorMessage('Could not get runbook info for ' + runbookName + '! Error: ' + error.message)
         }
 
         var bodyParsed = JSON.parse(body)
@@ -84,11 +85,12 @@ var getListOfRunbooks = function (next, skip = false, runbookNames = false) {
         'content-type': 'application/json'
       }
     }, function (error, response, body) {
+      var bodyParsed = JSON.parse(body)
       if (error || response.statusCode != 200 && response.statusCode != 201 && response.statusCode != 202) {
         console.log(body)
-        return vscode.window.showErrorMessage('Could not get list of Runbook from Azure Automation!')
+        return vscode.window.showErrorMessage('Could not get list of Runbook from Azure Automation! Error: ' + bodyParsed.error.message)
       }
-      var bodyParsed = JSON.parse(body)
+      
       var i = 0
       _.forEach(bodyParsed.value, function (runbookObject) {
         runbookNames.push(runbookObject.name)
@@ -258,6 +260,7 @@ var createLocalRunbook = function (runbookName, runbookType, existing=false, pub
         } else if(runbookType == 'Python2') {
           var path = vscode.workspace.rootPath + `\\${runbookName}.py`
         }
+        
         Q.fcall(function () {
           fs.writeFile(path, body)
         })
