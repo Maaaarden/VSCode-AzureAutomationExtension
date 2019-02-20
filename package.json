@@ -2,7 +2,7 @@
     "name": "azureautomation",
     "displayName": "Azure Automation",
     "description": "Work locally, against Azure Automation subscription.",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "publisher": "AwesomeAutomationTeam",
     "engines": {
         "vscode": "^1.24.1"
