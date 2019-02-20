@@ -339,6 +339,16 @@ var createLocalRunbook = function (runbookName, runbookType, existing=false, pub
     } else if(runbookType == 'Python2') {
       var path = vscode.workspace.rootPath + `\\${runbookName}.py`
     }
+
+    fs.writeFile(path, "", function() {
+      vscode.workspace.openTextDocument(path).then(doc => {
+        vscode.window.showTextDocument(doc)
+        setTimeout(function () {
+          next()
+        }, 2000)
+      })
+    })
+/*
     Q.fcall(function () {
       fs.writeFile(path, "")
     })
@@ -349,7 +359,7 @@ var createLocalRunbook = function (runbookName, runbookType, existing=false, pub
           next()
         }, 2000)
       })
-    })
+    })*/
   }
 }
 
