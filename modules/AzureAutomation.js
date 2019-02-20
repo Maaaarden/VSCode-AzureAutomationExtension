@@ -46,8 +46,8 @@ var getRunbookInfo = function (runbookName) {
       }, function (error, response, body) {
         if (error || response.statusCode != 200 && response.statusCode != 201 && response.statusCode != 202) {
           console.log(body)
-          console.log(response)
           return vscode.window.showErrorMessage('Could not get runbook info for ' + runbookName + '! Error: ' + error.message)
+          console.log(response)
         }
 
         var bodyParsed = JSON.parse(body)
@@ -253,7 +253,7 @@ var createLocalRunbook = function (runbookName, runbookType, existing=false, pub
       }, function (error, response, body) {
         if (error || response.statusCode != 200 && response.statusCode != 201 && response.statusCode != 202) {
           console.log(body)
-          return vscode.window.showErrorMessage('Could not get runbook from Azure Cloud.')
+          return vscode.window.showErrorMessage('Could not get runbook from Azure Cloud. Error: ' + error.message)
         }
         if(runbookType == 'PowerShell') {
           var path = vscode.workspace.rootPath + `\\${runbookName}.ps1`
@@ -261,6 +261,15 @@ var createLocalRunbook = function (runbookName, runbookType, existing=false, pub
           var path = vscode.workspace.rootPath + `\\${runbookName}.py`
         }
         
+        fs.writeFile(path, body, function() {
+          vscode.workspace.openTextDocument(path).then(doc => {
+            vscode.window.showTextDocument(doc)
+            setTimeout(function () {
+              next()
+            }, 2000)
+          })
+        })
+/*
         Q.fcall(function () {
           fs.writeFile(path, body)
         })
@@ -272,6 +281,10 @@ var createLocalRunbook = function (runbookName, runbookType, existing=false, pub
             }, 2000)
           })
         })
+        .catch((err) => {
+          console.log("Fejl 1")
+          console.log(err)
+        })*/
       })
     })
   }
@@ -292,6 +305,17 @@ var createLocalRunbook = function (runbookName, runbookType, existing=false, pub
         } else if(runbookType == 'Python2') {
           var path = vscode.workspace.rootPath + `\\${runbookName}.py`
         }
+
+        
+        fs.writeFile(path, body, function() {
+          vscode.workspace.openTextDocument(path).then(doc => {
+            vscode.window.showTextDocument(doc)
+            setTimeout(function () {
+              next()
+            }, 2000)
+          })
+        })
+/*
         Q.fcall(function () {
           fs.writeFile(path, body)
         })
@@ -303,6 +327,10 @@ var createLocalRunbook = function (runbookName, runbookType, existing=false, pub
             }, 2000)
           })
         })
+        .catch((err) => {
+          console.log("Fejl 2")
+          console.log(err)
+        })*/
       })
     })
   } else {
