@@ -141,16 +141,17 @@ var saveAsDraft = function (next) {
       },
       body: fileText
     }, function (error, response, body) {
-      if (error || response.statusCode != 200 && response.statusCode != 201 && response.statusCode != 202) {
-        console.log(body)
-        return vscode.window.showErrorMessage('An error accoured while trying to save the draft in Azure Cloud.')
-      }
+      
       if (response.statusCode === 202) {
         vscode.window.setStatusBarMessage('Draft saved successfully.', 3100)
         // vscode.window.showInformationMessage('Draft saved successfully.')
         return next({ success: true })
       } else if (response.statusCode === 404) {
         return next({ success: false, reason: 'Runbook does not exist in Azure' })
+      } else if (error || response.statusCode != 200 && response.statusCode != 201 && response.statusCode != 202) {
+        console.log(response)
+        console.log(body)
+        return vscode.window.showErrorMessage('An error accoured while trying to save the draft in Azure Cloud.')
       } else {
         return vscode.window.showErrorMessage('An error accoured while trying to save the draft in Azure Cloud.')
       }
@@ -207,7 +208,7 @@ var createAzureRunbook = function (runbookType ,next) {
         }, function (error, response, body) {
           if (error || response.statusCode != 200 && response.statusCode != 201 && response.statusCode != 202) {
             console.log(body)
-            return vscode.window.showErrorMessage('An error occured while trying to create the runbook in Azure Cloud.')
+            return vscode.window.showErrorMessage('An error occured while trying to create the runbook in Azure Cloud. Error: ' + error.message)
           }
           if (response.statusCode === 201) {
             vscode.window.setStatusBarMessage('Runbook created in Azure Cloud.', 3100)

@@ -12,14 +12,19 @@ const saveDraft = function (next) {
   Azure.saveAsDraft(function (status) {
     // If the runbook does not exist, create it and save again.
     if (status.success === false) {
-      Azure.createAzureRunbook(function () {
-        vscode.window.showInformationMessage('Couldn\'t find your Runbook in Azure, so created it for you.')
-        // Try and save again.
-        Azure.saveAsDraft(function () {
-          setTimeout(function () {
-            vscode.commands.executeCommand('azureatuomation.updateRunbookProvider')
-          }, 2000)
-          return next()
+      vscode.window.showQuickPick(['PowerShell', 'Python2'],{
+        placeHolder: 'Since the runbook does not already exist, please define a runbooktype'
+      })
+      .then(runbookType => {
+        Azure.createAzureRunbook(runbookType, function () {
+          vscode.window.showInformationMessage('Couldn\'t find your Runbook in Azure, so created it for you.')
+          // Try and save again.
+          Azure.saveAsDraft(function () {
+            setTimeout(function () {
+              vscode.commands.executeCommand('azureatuomation.updateRunbookProvider')
+            }, 2000)
+            return next()
+          })
         })
       })
     } else {
