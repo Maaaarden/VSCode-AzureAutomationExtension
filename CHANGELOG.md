@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to the "azureautomation" extension will be documented in this file.
 
+## [1.0.0] - 2019-02-20
+### Fixed
+ - Fixed an error that surfaced, when writing to disk. Causing "open runbook" not to work.
+
 ## [0.9.0] - 2018-10-29
 ### Added
  - Added support for Python2 runbooks. Create, Save Draft, Publish and run.

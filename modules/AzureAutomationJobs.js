@@ -99,7 +99,7 @@ function getJobInfo (token, guid, next) {
       'Authorization': token
     }
   }, function (error, response, body) {
-    if (error) {
+    if (error || response.statusCode != 200 && response.statusCode != 201 && response.statusCode != 202) {
     }
     if (response.statusCode === 200) {
       body = JSON.parse(body)
@@ -130,10 +130,11 @@ var getHybridWorkerGroups = function (token, next) {
       'Authorization': token
     }
   }, function (error, response, body) {
-    if (error) {
-
+    if (error || response.statusCode != 200 && response.statusCode != 201 && response.statusCode != 202) {
+      console.log(body)
+      vscode.window.showErrorMessage('Error fetching hybrid worker groups.')
     } else if (response.statusCode === 200) {
-      bodyParsed = JSON.parse(body)
+      var bodyParsed = JSON.parse(body)
       if ((bodyParsed.value).length === 0) {
         // console.log('No hybridworkers')
         vscode.window.showInformationMessage('No HybridWorkers found, running job in Azure')

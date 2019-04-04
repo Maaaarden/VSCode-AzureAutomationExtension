@@ -12,14 +12,19 @@ const saveDraft = function (next) {
   Azure.saveAsDraft(function (status) {
     // If the runbook does not exist, create it and save again.
     if (status.success === false) {
-      Azure.createAzureRunbook(function () {
-        vscode.window.showInformationMessage('Couldn\'t find your Runbook in Azure, so created it for you.')
-        // Try and save again.
-        Azure.saveAsDraft(function () {
-          setTimeout(function () {
-            vscode.commands.executeCommand('azureatuomation.updateRunbookProvider')
-          }, 2000)
-          return next()
+      vscode.window.showQuickPick(['PowerShell', 'Python2'],{
+        placeHolder: 'Since the runbook does not already exist, please define a runbooktype'
+      })
+      .then(runbookType => {
+        Azure.createAzureRunbook(runbookType, function () {
+          vscode.window.showInformationMessage('Couldn\'t find your Runbook in Azure, so created it for you.')
+          // Try and save again.
+          Azure.saveAsDraft(function () {
+            setTimeout(function () {
+              vscode.commands.executeCommand('azureatuomation.updateRunbookProvider')
+            }, 2000)
+            return next()
+          })
         })
       })
     } else {
@@ -63,7 +68,7 @@ const openRunbookFromAzure = function () {
           Azure.getRunbookInfo(runbookName)
           .then(rbInfo => {
             if(rbInfo.properties.state == 'New') {
-              Azure.createLocalRunbook(runbookName, true, false, function() {
+              Azure.createLocalRunbook(runbookName, rbInfo.properties.runbookType, true, false, function() {
                 setTimeout(function () {
                   vscode.commands.executeCommand('azureautomation.updateRunbookProvider')
                 }, 2000)
@@ -72,7 +77,7 @@ const openRunbookFromAzure = function () {
               vscode.window.showQuickPick(['Published', 'Draft'])
               .then(pick => {
                 let draft = pick == 'Draft' ? true : false
-                Azure.createLocalRunbook(runbookName, true, draft, function () {
+                Azure.createLocalRunbook(runbookName, rbInfo.properties.runbookType, true, draft, function () {
                   setTimeout(function () {
                     vscode.commands.executeCommand('azureautomation.updateRunbookProvider')
                   }, 2000)
@@ -89,7 +94,10 @@ const openRunbookFromAzure = function () {
 const openSpecificRunbook = function (runbookName, runbookType, published) {
   Azure.doesRunbookExist(runbookName, function (runbookExist) {
     if(runbookExist) {
-      Azure.createLocalRunbook(runbookName, runbookType, true, published, function () {
+      Azure.getRunbookInfo(runbookName)
+      .then(runbookInfo => {
+          Azure.createLocalRunbook(runbookName, runbookInfo.properties.runbookType, true, published, function () {
+        })
       })
     }
   })
