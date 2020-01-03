@@ -115,6 +115,7 @@ var getListOfRunbooks = function (next, skip = false, runbookNames = false) {
 var saveAsDraft = function (next) {
   var vscode = require('vscode')
   var request = require('request')
+  var path = require('path')
   var azureconfig = vscode.workspace.getConfiguration("azureautomation")
   var _ = require('lodash')
   var document = vscode.window.activeTextEditor.document
@@ -122,13 +123,13 @@ var saveAsDraft = function (next) {
   if (document.isUntitled) {
     return vscode.window.showWarningMessage('Please save your runbook locally before saving to Azure.')
   }
-  // First splits the string on '\', second takes the last value in the array, finally replaces '.ps1' with nothing (removes it).
-  var rbPath = _.last(_.split(document.fileName, '\\'))
+  // First splits the string on '\' or '/', second takes the last value in the array, finally replaces '.ps1' with nothing (removes it).
+  var rbPath = _.last(_.split(document.fileName, path.sep))
   var runbookName = rbPath.substr(0, rbPath.lastIndexOf('.'))
   /**if(runbookType == 'PowerShell') {
-    var runbookName = _.replace(_.last(_.split(document.fileName, '\\')), '.ps1', '')
+    var runbookName = _.replace(_.last(_.split(document.fileName, path.sep)), '.ps1', '')
   } else if(runbookType == 'Python2') {
-    var runbookName = _.replace(_.last(_.split(document.fileName, '\\')), '.py', '')
+    var runbookName = _.replace(_.last(_.split(document.fileName, path.sep)), '.py', '')
   }*/
   var fileText = document.getText()
 
@@ -166,15 +167,16 @@ var saveAsDraft = function (next) {
 var createAzureRunbook = function (runbookType ,next) {
   var vscode = require('vscode')
   var request = require('request')
+  var path = require('path')
   var azureconfig = vscode.workspace.getConfiguration("azureautomation")
   var _ = require('lodash')
   var document = vscode.window.activeTextEditor.document
   /**if(runbookType == 'PowerShell') {
-    var runbookName = _.replace(_.last(_.split(document.fileName, '\\')), '.ps1', '')
+    var runbookName = _.replace(_.last(_.split(document.fileName, path.sep)), '.ps1', '')
   } else if(runbookType == 'Python2') {
-    var runbookName = _.replace(_.last(_.split(document.fileName, '\\')), '.py', '')
+    var runbookName = _.replace(_.last(_.split(document.fileName, path.sep)), '.py', '')
   }*/
-  var rbPath = _.last(_.split(document.fileName, '\\'))
+  var rbPath = _.last(_.split(document.fileName, path.sep))
   var runbookName = rbPath.substr(0, rbPath.lastIndexOf('.'))
 
   if (document.isUntitled) {
@@ -233,6 +235,7 @@ var createAzureRunbook = function (runbookType ,next) {
 var createLocalRunbook = function (runbookName, runbookType, existing=false, published=false, next) {
   var vscode = require('vscode')
   var request = require('request')
+  var path = require('path')
   var azureconfig = vscode.workspace.getConfiguration("azureautomation")
   var fs = require('fs')
   var Q = require('q')
@@ -257,13 +260,13 @@ var createLocalRunbook = function (runbookName, runbookType, existing=false, pub
           return vscode.window.showErrorMessage('Could not get runbook from Azure Cloud. Error: ' + error.message)
         }
         if(runbookType == 'PowerShell') {
-          var path = vscode.workspace.rootPath + `\\${runbookName}.ps1`
+          var rootPath = vscode.workspace.rootPath + path.sep + `${runbookName}.ps1`
         } else if(runbookType == 'Python2') {
-          var path = vscode.workspace.rootPath + `\\${runbookName}.py`
+          var rootPath = vscode.workspace.rootPath + path.sep + `${runbookName}.py`
         }
         
-        fs.writeFile(path, body, function() {
-          vscode.workspace.openTextDocument(path).then(doc => {
+        fs.writeFile(rootPath, body, function() {
+          vscode.workspace.openTextDocument(rootPath).then(doc => {
             vscode.window.showTextDocument(doc)
             setTimeout(function () {
               next()
@@ -272,10 +275,10 @@ var createLocalRunbook = function (runbookName, runbookType, existing=false, pub
         })
 /*
         Q.fcall(function () {
-          fs.writeFile(path, body)
+          fs.writeFile(rootPath, body)
         })
         .then(function () {
-          vscode.workspace.openTextDocument(path).then(doc => {
+          vscode.workspace.openTextDocument(rootPath).then(doc => {
             vscode.window.showTextDocument(doc)
             setTimeout(function () {
               next()
@@ -302,14 +305,14 @@ var createLocalRunbook = function (runbookName, runbookType, existing=false, pub
           return vscode.window.showErrorMessage('Could not get template from Azure Cloud.')
         }
         if(runbookType == 'PowerShell') {
-          var path = vscode.workspace.rootPath + `\\${runbookName}.ps1`
+          var rootPath = vscode.workspace.rootPath + path.sep + `${runbookName}.ps1`
         } else if(runbookType == 'Python2') {
-          var path = vscode.workspace.rootPath + `\\${runbookName}.py`
+          var rootPath = vscode.workspace.rootPath + path.sep + `${runbookName}.py`
         }
 
         
-        fs.writeFile(path, body, function() {
-          vscode.workspace.openTextDocument(path).then(doc => {
+        fs.writeFile(rootPath, body, function() {
+          vscode.workspace.openTextDocument(rootPath).then(doc => {
             vscode.window.showTextDocument(doc)
             setTimeout(function () {
               next()
@@ -318,10 +321,10 @@ var createLocalRunbook = function (runbookName, runbookType, existing=false, pub
         })
 /*
         Q.fcall(function () {
-          fs.writeFile(path, body)
+          fs.writeFile(rootPath, body)
         })
         .then(function () {
-          vscode.workspace.openTextDocument(path).then(doc => {
+          vscode.workspace.openTextDocument(rootPath).then(doc => {
             vscode.window.showTextDocument(doc)
             setTimeout(function () {
               next()
@@ -336,13 +339,13 @@ var createLocalRunbook = function (runbookName, runbookType, existing=false, pub
     })
   } else {
     if(runbookType == 'PowerShell') {
-      var path = vscode.workspace.rootPath + `\\${runbookName}.ps1`
+      var rootPath = vscode.workspace.rootPath + path.sep + `${runbookName}.ps1`
     } else if(runbookType == 'Python2') {
-      var path = vscode.workspace.rootPath + `\\${runbookName}.py`
+      var rootPath = vscode.workspace.rootPath + path.sep + `${runbookName}.py`
     }
 
-    fs.writeFile(path, "", function() {
-      vscode.workspace.openTextDocument(path).then(doc => {
+    fs.writeFile(rootPath, "", function() {
+      vscode.workspace.openTextDocument(rootPath).then(doc => {
         vscode.window.showTextDocument(doc)
         setTimeout(function () {
           next()
@@ -351,10 +354,10 @@ var createLocalRunbook = function (runbookName, runbookType, existing=false, pub
     })
 /*
     Q.fcall(function () {
-      fs.writeFile(path, "")
+      fs.writeFile(rootPath, "")
     })
     .then(function () {
-      vscode.workspace.openTextDocument(path).then(doc => {
+      vscode.workspace.openTextDocument(rootPath).then(doc => {
         vscode.window.showTextDocument(doc)
         setTimeout(function () {
           next()
@@ -367,18 +370,19 @@ var createLocalRunbook = function (runbookName, runbookType, existing=false, pub
 var publishRunbook = function (next) {
   var vscode = require('vscode')
   var request = require('request')
+  var path = require('path')
   var azureconfig = vscode.workspace.getConfiguration("azureautomation")
   var _ = require('lodash')
   var document = vscode.window.activeTextEditor.document
 
-  // First splits the string on '\', second takes the last value in the array, finally replaces '.ps1' with nothing (removes it).
+  // First splits the string on '\' or '/', second takes the last value in the array, finally replaces '.ps1' with nothing (removes it).
   /**
   if(runbookType == 'PowerShell') {
-    var runbookName = _.replace(_.last(_.split(document.fileName, '\\')), '.ps1', '')
+    var runbookName = _.replace(_.last(_.split(document.fileName, path.sep)), '.ps1', '')
   } else if(runbookType == 'Python2') {
-    var runbookName = _.replace(_.last(_.split(document.fileName, '\\')), '.py', '')
+    var runbookName = _.replace(_.last(_.split(document.fileName, path.sep)), '.py', '')
   }*/
-  var rbPath = _.last(_.split(document.fileName, '\\'))
+  var rbPath = _.last(_.split(document.fileName, path.sep))
   var runbookName = rbPath.substr(0, rbPath.lastIndexOf('.'))
 
   getOauthToken(function (token) {
@@ -411,13 +415,14 @@ var publishRunbook = function (next) {
 var startPublishedRunbook = function (token, next) {
   var vscode = require('vscode')
   var request = require('request')
+  var path = require('path')
   var jobs = require('./AzureAutomationJobs.js')
   var azureconfig = vscode.workspace.getConfiguration("azureautomation")
   var guid = createGuid()
   var _ = require('lodash')
 
-  //var runbookName = _.replace(_.last(_.split(vscode.window.activeTextEditor.document.fileName, '\\')), '.ps1', '')
-  var rbPath = _.last(_.split(vscode.window.activeTextEditor.document.fileName, '\\'))
+  //var runbookName = _.replace(_.last(_.split(vscode.window.activeTextEditor.document.fileName, path.sep)), '.ps1', '')
+  var rbPath = _.last(_.split(vscode.window.activeTextEditor.document.fileName, path.sep))
   var runbookName = rbPath.substr(0, rbPath.lastIndexOf('.'))
   jobs.getHybridWorkerGroups(token, function (hybridWorkers) {
     if (!hybridWorkers) {
