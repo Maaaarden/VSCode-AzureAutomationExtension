@@ -140,13 +140,13 @@ class RunbookProvider {
     let treeItemName = node.Level == 3 ? '' + node.Name + ': ' + node.Value + '' : node.Name
     let treeItem = new vscode.TreeItem(treeItemName, hasChildren ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None)
     switch(node.Level) {
-      /**case 1:
+      case 1:
         treeItem.command = {
           command: 'azureautomation.openSpecificRunbook',
           title: '',
           arguments: [treeItem.label, node.RunbookType, false]
         }
-        break;**/
+        break;
       case 2:
         if(node.Name == 'Published' && node.Parent.Published == true) {
           treeItem.command = {
