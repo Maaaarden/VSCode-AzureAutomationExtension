@@ -13,6 +13,7 @@ function activateCommands (context) {
   var RunbookProviderObj = new RunbookProvider(context)
   //vscode.window.registerTreeDataProvider('automation-runbooks', RunbookProviderObj)
   vscode.window.createTreeView('automation-runbooks', { treeDataProvider: RunbookProviderObj })
+  
   var updateRunbookProvider = vscode.commands.registerCommand(
     'azureautomation.updateRunbookProvider', function () {
       runChecks()
