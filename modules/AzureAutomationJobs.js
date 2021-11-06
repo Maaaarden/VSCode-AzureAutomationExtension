@@ -15,25 +15,31 @@ var showJobOutput = function (token, guid, runbookOutputs, lastStreamNumber = 0)
             var summary = streamObject.properties.summary
             var streamId = streamObject.properties.jobStreamId
             var streamIdNumber = streamId.substring(streamId.length - 20, streamId.length)
-            if (lastStreamNumber < parseInt(streamIdNumber)) {
-              switch (streamObject.properties.streamType) {
-                case 'Output':
-                  runbookOutputs.output.appendLine(summary)
-                  break
-                case 'Warning':
-                  runbookOutputs.warnings.appendLine(summary)
-                  runbookOutputs.warnings.show()
-                  break
-                case 'Error':
-                  runbookOutputs.errors.appendLine(summary)
-                  runbookOutputs.errors.show()
-                  break
-                default:
-                  break
+            var jobOutput = getJobStream(token, guid, streamId, function (streamJobObj) {
+              if (lastStreamNumber < parseInt(streamIdNumber)) {
+                switch (streamJobObj.properties.streamType) {
+                  case 'Output':
+                    var streamText = streamJobObj.properties.streamText
+                    streamText = streamText.split('\r\n')
+                    _.forEach(streamText, function (streamLine) {
+                      runbookOutputs.output.appendLine(streamLine)
+                    })
+                    break
+                  case 'Warning':
+                    runbookOutputs.warnings.appendLine(streamJobObj.properties.value)
+                    runbookOutputs.warnings.show()
+                    break
+                  case 'Error':
+                    runbookOutputs.errors.appendLine(streamJobObj.properties.value)
+                    runbookOutputs.errors.show()
+                    break
+                  default:
+                    break
+                }
+                lastStreamNumber = parseInt(streamIdNumber)
               }
-              lastStreamNumber = parseInt(streamIdNumber)
-            }
-            // console.log(streamObject.properties.summary)
+              // console.log(streamObject.properties.summary)
+            })
           })
         })
         if (status === 'Running') {
@@ -57,6 +63,29 @@ var showJobOutput = function (token, guid, runbookOutputs, lastStreamNumber = 0)
   // When job is running do stuff
 
   // When job is done / failed, do stuff again
+}
+
+/**
+ *
+ * @param {*} token
+ * @param {*} guid
+ * @param {*} next
+ */
+ function getJobStream (token, guid, jobStreamId, next) {
+  var request = require('request')
+  var vscode = require('vscode')
+  var azureconfig = vscode.workspace.getConfiguration("azureautomation")
+
+  request.get({
+    url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroup}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/jobs/${guid}/streams/${jobStreamId}?api-version=${azureconfig.apiVersion}`,
+    headers: {
+      'Authorization': token
+    }
+  }, function (error, response, body) {
+    // console.log('Body of jobstreams: ' + body)
+
+    return next(JSON.parse(body))
+  })
 }
 
 /**
