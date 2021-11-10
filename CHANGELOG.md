@@ -1,6 +1,13 @@
 # Change Log
 All notable changes to the "azureautomation" extension will be documented in this file.
 
+## [1.0.6] - 2019-02-20
+### Fixed
+ - Fixed a hardcoded region for runbooks, causing issues for automation accounts not in westeurope.
+
+### Added
+ - Added support for runbook runtime versions. Support for both PowerShell and Pyhton.
+
 ## [1.0.0] - 2019-02-20
 ### Fixed
  - Fixed an error that surfaced, when writing to disk. Causing "open runbook" not to work.
