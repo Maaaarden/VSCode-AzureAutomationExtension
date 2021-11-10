@@ -1,7 +1,7 @@
 # Change Log
 All notable changes to the "azureautomation" extension will be documented in this file.
 
-## [1.0.6] - 2019-02-20
+## [1.0.7] - 2019-02-20
 ### Fixed
  - Fixed a hardcoded region for runbooks, causing issues for automation accounts not in westeurope.
 
