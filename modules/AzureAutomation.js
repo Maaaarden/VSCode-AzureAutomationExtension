@@ -7,7 +7,6 @@
 var getOauthToken = function (next) {
   var vscode = require('vscode')
   var request = require('request')
-  var _ = require('lodash')
   var azureconfig = vscode.workspace.getConfiguration("azureautomation")
 
   //var clientSecret = _.replace(azureconfig.clientSecret, new RegExp('\\+','g'),'%2B')
@@ -29,12 +28,37 @@ var getOauthToken = function (next) {
   })
 }
 
-var getRunbookInfo = function (runbookName) {
-  return new Promise((resolve, reject) => {
+var getAutomationAccountRegion = function () {
+  return new Promise((resolve) => {
     var vscode = require('vscode')
     var request = require('request')
     var azureconfig = vscode.workspace.getConfiguration("azureautomation")
-    var _ = require('lodash')
+
+    getOauthToken(function (token) {
+      request.get({
+        url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroup}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}?api-version=${azureconfig.apiVersion}`,
+        headers: {
+          'Authorization': token.value,
+          'content-type': 'application/json'
+        }
+      }, function (error, response, body) {
+        if (error || response.statusCode != 200 && response.statusCode != 201 && response.statusCode != 202) {
+          console.log(body)
+          return vscode.window.showErrorMessage('Could not get Automation Account info for ${azureconfig.automationAccount}')
+        }
+
+        var bodyParsed = JSON.parse(body)
+        resolve(bodyParsed.location)
+      })
+    })
+  })
+}
+
+var getRunbookInfo = function (runbookName) {
+  return new Promise((resolve) => {
+    var vscode = require('vscode')
+    var request = require('request')
+    var azureconfig = vscode.workspace.getConfiguration("azureautomation")
     
     getOauthToken(function (token) {
       request.get({
@@ -47,7 +71,6 @@ var getRunbookInfo = function (runbookName) {
         if (error || response.statusCode != 200 && response.statusCode != 201 && response.statusCode != 202) {
           console.log(body)
           return vscode.window.showErrorMessage('Could not get runbook info for ' + runbookName + '! Error: ' + error.message)
-          console.log(response)
         }
 
         var bodyParsed = JSON.parse(body)
@@ -163,20 +186,22 @@ var saveAsDraft = function (next) {
  * Creates a new runbook in Azure unpublished.
  * @param   {Function}  next    Callback function
  */
-var createAzureRunbook = function (runbookType ,next) {
+var createAzureRunbook = function (runbookType, runbookRuntime, next) {
   var vscode = require('vscode')
   var request = require('request')
   var azureconfig = vscode.workspace.getConfiguration("azureautomation")
   var _ = require('lodash')
   var document = vscode.window.activeTextEditor.document
-  /**if(runbookType == 'PowerShell') {
-    var runbookName = _.replace(_.last(_.split(document.fileName, '\\')), '.ps1', '')
-  } else if(runbookType == 'Python2') {
-    var runbookName = _.replace(_.last(_.split(document.fileName, '\\')), '.py', '')
-  }*/
   var rbPath = _.last(_.split(document.fileName, '\\'))
   var runbookName = rbPath.substr(0, rbPath.lastIndexOf('.'))
 
+  if(runbookRuntime.replace(' (preview)', '') == '7.1')
+    runbookType = 'PowerShell7'
+  if(runbookRuntime.replace(' (preview)', '') == '3.8.0') {
+    runbookType = 'Python3'
+  } else {
+    runbookType = 'Python2'
+  }
   if (document.isUntitled) {
     return vscode.window.showErrorMessage('Please save your runbook locally before saving to Azure.')
   }
@@ -185,39 +210,42 @@ var createAzureRunbook = function (runbookType ,next) {
       vscode.window.showErrorMessage('Runbook name already exists.')
       return next()
     } else {
-      getOauthToken(function (token) {
-        var requestData = {
-            'tags': {
-              'CreatedFrom': 'VSCode Extension'
+      getAutomationAccountRegion()
+      .then(region => {
+        getOauthToken(function (token) {
+          var requestData = {
+              'tags': {
+                'CreatedFrom': 'VSCode Extension'
+              },
+              'properties': {
+                'runbookType': runbookType,
+                'draft': {
+                  'inEdit': false
+                }
+              },
+              'location': region
+            }
+          request.put({
+            url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroup}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/runbooks/${runbookName}?api-version=2015-10-31`,
+            headers: {
+              'Authorization': token.value,
+              'Content-Type': 'application/json'
             },
-            'properties': {
-              'runbookType': runbookType,
-              'draft': {
-                'inEdit': false
-              }
-            },
-            'location': 'westeurope'
-          }
-        request.put({
-          url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroup}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/runbooks/${runbookName}?api-version=${azureconfig.apiVersion}`,
-          headers: {
-            'Authorization': token.value,
-            'Content-Type': 'application/json'
-          },
-          json: requestData
-        }, function (error, response, body) {
-          if (error || response.statusCode != 200 && response.statusCode != 201 && response.statusCode != 202) {
-            console.log(body)
-            return vscode.window.showErrorMessage('An error occured while trying to create the runbook in Azure Cloud. Error: ' + error.message)
-          }
-          if (response.statusCode === 201) {
-            vscode.window.setStatusBarMessage('Runbook created in Azure Cloud.', 3100)
-            //vscode.window.showInformationMessage('Runbook created in Azure Cloud.')
-            return next()
-          } else {
-            console.log(body)
-            return vscode.window.showErrorMessage('Could not create Runbook in Azure Cloud..')
-          }
+            json: requestData
+          }, function (error, response, body) {
+            if (error || response.statusCode != 200 && response.statusCode != 201 && response.statusCode != 202) {
+              console.log(body)
+              return vscode.window.showErrorMessage('An error occured while trying to create the runbook in Azure Cloud. Error: ' + error.message)
+            }
+            if (response.statusCode === 201) {
+              vscode.window.setStatusBarMessage('Runbook created in Azure Cloud.', 3100)
+              //vscode.window.showInformationMessage('Runbook created in Azure Cloud.')
+              return next()
+            } else {
+              console.log(body)
+              return vscode.window.showErrorMessage('Could not create Runbook in Azure Cloud..')
+            }
+          })
         })
       })
     }
@@ -235,7 +263,6 @@ var createLocalRunbook = function (runbookName, runbookType, existing=false, pub
   var request = require('request')
   var azureconfig = vscode.workspace.getConfiguration("azureautomation")
   var fs = require('fs')
-  var Q = require('q')
 
   var hasWorkspace = !!vscode.workspace.rootPath
   if (!hasWorkspace) {
@@ -256,9 +283,9 @@ var createLocalRunbook = function (runbookName, runbookType, existing=false, pub
           console.log(body)
           return vscode.window.showErrorMessage('Could not get runbook from Azure Cloud. Error: ' + error.message)
         }
-        if(runbookType == 'PowerShell') {
+        if(runbookType == 'PowerShell' || runbookType == 'PowerShell7') {
           var path = vscode.workspace.rootPath + `\\${runbookName}.ps1`
-        } else if(runbookType == 'Python2') {
+        } else if(runbookType == 'Python' || runbookType == 'Python3') {
           var path = vscode.workspace.rootPath + `\\${runbookName}.py`
         }
         
@@ -301,9 +328,9 @@ var createLocalRunbook = function (runbookName, runbookType, existing=false, pub
           console.log(body)
           return vscode.window.showErrorMessage('Could not get template from Azure Cloud.')
         }
-        if(runbookType == 'PowerShell') {
+        if(runbookType == 'PowerShell' || runbookType == 'PowerShell7') {
           var path = vscode.workspace.rootPath + `\\${runbookName}.ps1`
-        } else if(runbookType == 'Python2') {
+        } else if(runbookType == 'Python' || runbookType == 'Python3') {
           var path = vscode.workspace.rootPath + `\\${runbookName}.py`
         }
 
@@ -335,9 +362,9 @@ var createLocalRunbook = function (runbookName, runbookType, existing=false, pub
       })
     })
   } else {
-    if(runbookType == 'PowerShell') {
+    if(runbookType == 'PowerShell' || runbookType == 'PowerShell7') {
       var path = vscode.workspace.rootPath + `\\${runbookName}.ps1`
-    } else if(runbookType == 'Python2') {
+    } else if(runbookType == 'Python' || runbookType == 'Python3') {
       var path = vscode.workspace.rootPath + `\\${runbookName}.py`
     }
 
@@ -435,7 +462,7 @@ var startPublishedRunbook = function (token, next) {
             }
           }
         }
-      }, function (error, response, body) {
+      }, function (error, response) {
         if (response.statusCode === 404 || error) {
           console.log(response)
           vscode.window.showErrorMessage('Something went wrong, when trying to start the job.')
@@ -451,6 +478,7 @@ var startPublishedRunbook = function (token, next) {
       })
     } else {
       vscode.window.showQuickPick(hybridWorkers)
+    // eslint-disable-next-line no-undef
     .then(val => runOn = val)
     .then(function (runOn) {
       if(runOn.detail) {
@@ -469,7 +497,7 @@ var startPublishedRunbook = function (token, next) {
               'runOn': runOn.detail
             }
           }
-        }, function (error, response, body) {
+        }, function (error, response) {
           if (response.statusCode === 404 || error) {
             console.log(response)
             vscode.window.showErrorMessage('Something went wrong, when trying to start the job.')
@@ -498,7 +526,7 @@ var startPublishedRunbook = function (token, next) {
               }
             }
           }
-        }, function (error, response, body) {
+        }, function (error, response) {
           if (response.statusCode === 404 || error) {
             console.log(response)
             vscode.window.showErrorMessage('Something went wrong, when trying to start the job.')

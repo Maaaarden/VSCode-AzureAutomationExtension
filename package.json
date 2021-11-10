@@ -108,6 +108,16 @@
         "configuration": {
             "title": "Azure Automation configuration",
             "properties": {
+                "azureautomation.tenantId": {
+                    "type": "string",
+                    "default": "",
+                    "description": "ID of your tenant"
+                },
+                "azureautomation.subscriptionId": {
+                    "type": "string",
+                    "default": "",
+                    "description": "ID of your subscription"
+                },
                 "azureautomation.clientId": {
                     "type": "string",
                     "default": "",
@@ -117,16 +127,6 @@
                     "type": "string",
                     "default": "",
                     "description": "Client secret for your AAD App"
-                },
-                "azureautomation.subscriptionId": {
-                    "type": "string",
-                    "default": "",
-                    "description": "ID of your subscription"
-                },
-                "azureautomation.tenantId": {
-                    "type": "string",
-                    "default": "",
-                    "description": "ID of your tenant"
                 },
                 "azureautomation.resourceGroup": {
                     "type": "string",

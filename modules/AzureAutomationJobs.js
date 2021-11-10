@@ -12,10 +12,9 @@ var showJobOutput = function (token, guid, runbookOutputs, lastStreamNumber = 0)
       } else {
         getJobStreams(token, guid, function (streamBody) {
           _.forEach(streamBody.value, function (streamObject) {
-            var summary = streamObject.properties.summary
             var streamId = streamObject.properties.jobStreamId
             var streamIdNumber = streamId.substring(streamId.length - 20, streamId.length)
-            var jobOutput = getJobStream(token, guid, streamId, function (streamJobObj) {
+            getJobStream(token, guid, streamId, function (streamJobObj) {
               if (lastStreamNumber < parseInt(streamIdNumber)) {
                 switch (streamJobObj.properties.streamType) {
                   case 'Output':
@@ -26,11 +25,19 @@ var showJobOutput = function (token, guid, runbookOutputs, lastStreamNumber = 0)
                     })
                     break
                   case 'Warning':
-                    runbookOutputs.warnings.appendLine(streamJobObj.properties.value)
+                    var streamText = streamJobObj.properties.streamText
+                    streamText = streamText.split('\r\n')
+                    _.forEach(streamText, function (streamLine) {
+                      runbookOutputs.warnings.appendLine(streamLine)
+                    })
                     runbookOutputs.warnings.show()
                     break
                   case 'Error':
-                    runbookOutputs.errors.appendLine(streamJobObj.properties.value)
+                    var streamText = streamJobObj.properties.streamText
+                    streamText = streamText.split('\r\n')
+                    _.forEach(streamText, function (streamLine) {
+                      runbookOutputs.warnings.appendLine(streamLine)
+                    })
                     runbookOutputs.errors.show()
                     break
                   default:
@@ -38,7 +45,6 @@ var showJobOutput = function (token, guid, runbookOutputs, lastStreamNumber = 0)
                 }
                 lastStreamNumber = parseInt(streamIdNumber)
               }
-              // console.log(streamObject.properties.summary)
             })
           })
         })
