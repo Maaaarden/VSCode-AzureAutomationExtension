@@ -216,7 +216,7 @@
         "@types/mocha": "^2.2.32"
     },
     "dependencies": {
-        "lodash": "^4.17.4",
+        "lodash": "^4.17.21",
         "q": "^1.5.0",
         "request": "^2.81.0"
     }
