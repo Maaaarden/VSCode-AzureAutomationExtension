@@ -152,6 +152,16 @@
                     "type": "boolean",
                     "default": false,
                     "description": "Make use of double variable+credential notation as early versions, or single variable notation (If set to 'false' only one variable or credential is used)"
+                },
+                "azureautomation.debugging": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Check this, to enable extensive logging, to a file in the path specified below"
+                },
+                "azureautomation.debuggingPath": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Folder path for creation of debugging log"
                 }
             }
         },

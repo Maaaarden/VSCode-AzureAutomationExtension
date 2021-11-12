@@ -2,6 +2,7 @@
 // Import the module and reference it with the alias vscode in your code below
 var vscode = require('vscode')
 var Azure = require('./modules/AzureAutomation.js')
+var LogEngine = require('./modules/LogEngine.js')
 
 function activateCommands (context) {
   var Controller = require('./controller.js')
@@ -159,6 +160,7 @@ function activateCommands (context) {
 function runChecks() {
   return new Promise((resolve, reject) => {
     Promise.all([
+      LogEngine.checkLogSettings(),
       checkForSettings(),
       checkForWorkspace()
     ]).then(() => {
