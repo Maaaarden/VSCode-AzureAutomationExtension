@@ -93,6 +93,7 @@ var getListOfRunbooks = function (next, skip = false, runbookNames = false) {
   var request = require('request')
   var azureconfig = vscode.workspace.getConfiguration("azureautomation")
   var _ = require('lodash')
+  var LogEngine = require('./LogEngine.js')
 
   if(!skip) {
     skip = ''
@@ -196,6 +197,7 @@ var createAzureRunbook = function (runbookType, runbookRuntime, next) {
   var document = vscode.window.activeTextEditor.document
   var rbPath = _.last(_.split(document.fileName, '\\'))
   var runbookName = rbPath.substr(0, rbPath.lastIndexOf('.'))
+  var LogEngine = require('./LogEngine.js')
 
   if(runbookRuntime.replace(' (preview)', '') == '7.1')
     runbookType = 'PowerShell7'
@@ -265,6 +267,7 @@ var createLocalRunbook = function (runbookName, runbookType, existing=false, pub
   var request = require('request')
   var azureconfig = vscode.workspace.getConfiguration("azureautomation")
   var fs = require('fs')
+  var LogEngine = require('./LogEngine.js')
 
   var hasWorkspace = !!vscode.workspace.rootPath
   if (!hasWorkspace) {
@@ -355,6 +358,7 @@ var publishRunbook = function (next) {
   var document = vscode.window.activeTextEditor.document
   var rbPath = _.last(_.split(document.fileName, '\\'))
   var runbookName = rbPath.substr(0, rbPath.lastIndexOf('.'))
+  var LogEngine = require('./LogEngine.js')
 
   getOauthToken(function (token) {
     request.post({
@@ -391,6 +395,7 @@ var startPublishedRunbook = function (token, next) {
   var azureconfig = vscode.workspace.getConfiguration("azureautomation")
   var guid = createGuid()
   var _ = require('lodash')
+  var LogEngine = require('./LogEngine.js')
 
   var rbPath = _.last(_.split(vscode.window.activeTextEditor.document.fileName, '\\'))
   var runbookName = rbPath.substr(0, rbPath.lastIndexOf('.'))
