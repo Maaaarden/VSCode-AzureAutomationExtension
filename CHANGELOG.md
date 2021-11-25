@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to the "azureautomation" extension will be documented in this file.
 
+## [1.0.11] - 2021-11-25
+### Removed
+ - Removed the option to manualle override API version. This has caused some API call to fail.
+   All API are updated with latest version as per MS Documentation.
+
 ## [1.0.8] - 2021-11-10
 ### Fixed
  - Fixed a hardcoded region for runbooks, causing issues for automation accounts not in westeurope.

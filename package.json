@@ -141,7 +141,7 @@
                 "azureautomation.apiVersion": {
                     "type": "string",
                     "default": "2018-01-15",
-                    "description": "API Version used by Azure REST API"
+                    "description": "(Deprecated - no longer used) API Version used by Azure REST API"
                 },
                 "azureautomation.templateName": {
                     "type": "string",

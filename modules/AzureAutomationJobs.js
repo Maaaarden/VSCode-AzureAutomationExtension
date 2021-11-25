@@ -83,7 +83,7 @@ var showJobOutput = function (token, guid, runbookOutputs, lastStreamNumber = 0)
   var azureconfig = vscode.workspace.getConfiguration("azureautomation")
 
   request.get({
-    url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroup}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/jobs/${guid}/streams/${jobStreamId}?api-version=${azureconfig.apiVersion}`,
+    url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroup}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/jobs/${guid}/streams/${jobStreamId}?api-version=2017-05-15-preview`,
     headers: {
       'Authorization': token
     }
@@ -106,7 +106,7 @@ function getJobStreams (token, guid, next) {
   var azureconfig = vscode.workspace.getConfiguration("azureautomation")
 
   request.get({
-    url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroup}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/jobs/${guid}/streams?api-version=${azureconfig.apiVersion}`,
+    url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroup}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/jobs/${guid}/streams?api-version=2017-05-15-preview`,
     headers: {
       'Authorization': token
     }
@@ -129,7 +129,7 @@ function getJobInfo (token, guid, next) {
   var azureconfig = vscode.workspace.getConfiguration("azureautomation")
 
   request.get({
-    url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroup}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/jobs/${guid}?api-version=${azureconfig.apiVersion}`,
+    url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroup}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/jobs/${guid}?api-version=2017-05-15-preview`,
     headers: {
       'Authorization': token
     }
@@ -160,7 +160,7 @@ var getHybridWorkerGroups = function (token, next) {
   var _ = require('lodash')
 
   request.get({
-    url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroup}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/hybridRunbookWorkerGroups?api-version=${azureconfig.apiVersion}`,
+    url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroup}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/hybridRunbookWorkerGroups?api-version=2015-10-31`,
     headers: {
       'Authorization': token
     }

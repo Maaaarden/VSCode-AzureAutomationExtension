@@ -37,7 +37,7 @@ var createLogFile = function () {
     checkFilePath(getLogFilePath())
         .then(exists => {
             if(exists) {
-                vscode.window.showInformationMessage('Log file for today already exist.')
+                //vscode.window.showInformationMessage('Log file for today already exist.')
             } else {
                 fs.writeFile(getLogFilePath, '', function () {})
             }
