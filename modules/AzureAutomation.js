@@ -199,13 +199,17 @@ var createAzureRunbook = function (runbookType, runbookRuntime, next) {
   var runbookName = rbPath.substr(0, rbPath.lastIndexOf('.'))
   var LogEngine = require('./LogEngine.js')
 
-  if(runbookRuntime.replace(' (preview)', '') == '7.1')
-    runbookType = 'PowerShell7'
-  else if(runbookRuntime.replace(' (preview)', '') == '3.8.0') {
-    runbookType = 'Python3'
+  if(runbookType == 'PowerShell') {
+    if(runbookRuntime.replace(' (preview)', '') == '7.1')
+      runbookType = 'PowerShell7'
   } else {
-    runbookType = 'Python2'
+    if(runbookRuntime.replace(' (preview)', '') == '3.8.0') {
+      runbookType = 'Python3'
+    } else {
+      runbookType = 'Python2'
+    }
   }
+
   if (document.isUntitled) {
     return vscode.window.showErrorMessage('Please save your runbook locally before saving to Azure.')
   }
