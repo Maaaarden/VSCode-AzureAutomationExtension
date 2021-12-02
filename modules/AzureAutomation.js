@@ -201,7 +201,7 @@ var createAzureRunbook = function (runbookType, runbookRuntime, next) {
 
   if(runbookRuntime.replace(' (preview)', '') == '7.1')
     runbookType = 'PowerShell7'
-  if(runbookRuntime.replace(' (preview)', '') == '3.8.0') {
+  else if(runbookRuntime.replace(' (preview)', '') == '3.8.0') {
     runbookType = 'Python3'
   } else {
     runbookType = 'Python2'
