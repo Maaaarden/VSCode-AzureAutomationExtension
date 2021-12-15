@@ -10,48 +10,11 @@ var showJobOutput = function (token, guid, runbookOutputs, lastStreamNumber = 0)
         console.log(status)
         vscode.window.setStatusBarMessage('Job status: Queued', 3100)
       } else {
-        getJobStreams(token, guid, function (streamBody) {
-          _.forEach(streamBody.value, function (streamObject) {
-            var streamId = streamObject.properties.jobStreamId
-            var streamIdNumber = streamId.substring(streamId.length - 20, streamId.length)
-            getJobStream(token, guid, streamId, function (streamJobObj) {
-              if (lastStreamNumber < parseInt(streamIdNumber)) {
-                switch (streamJobObj.properties.streamType) {
-                  case 'Output':
-                    var streamText = streamJobObj.properties.streamText
-                    streamText = streamText.split('\r\n')
-                    _.forEach(streamText, function (streamLine) {
-                      runbookOutputs.output.appendLine(streamLine)
-                    })
-                    break
-                  case 'Warning':
-                    var streamText = streamJobObj.properties.streamText
-                    streamText = streamText.split('\r\n')
-                    _.forEach(streamText, function (streamLine) {
-                      runbookOutputs.warnings.appendLine(streamLine)
-                    })
-                    runbookOutputs.warnings.show()
-                    break
-                  case 'Error':
-                    var streamText = streamJobObj.properties.streamText
-                    streamText = streamText.split('\r\n')
-                    _.forEach(streamText, function (streamLine) {
-                      runbookOutputs.warnings.appendLine(streamLine)
-                    })
-                    runbookOutputs.errors.show()
-                    break
-                  default:
-                    break
-                }
-                lastStreamNumber = parseInt(streamIdNumber)
-              }
-            })
-          })
-        })
         if (status === 'Running') {
           console.log(status)
           vscode.window.setStatusBarMessage('Job status: ' + status, 3100)
         } else if (status === 'Completed') {
+          jobhandler(token, guid, runbookOutputs)
           console.log('Stopped')
           vscode.window.setStatusBarMessage('Job status: ' + status, 60000)
           clearTimeout(getJobInfoInterval)
@@ -63,12 +26,47 @@ var showJobOutput = function (token, guid, runbookOutputs, lastStreamNumber = 0)
           clearTimeout(getJobInfoInterval)
         }
       }
-    }
-    )
+    })
   }, 3000)
   // When job is running do stuff
 
   // When job is done / failed, do stuff again
+}
+
+function jobhandler(token, guid, runbookOutputs) {
+  var _ = require('lodash')
+
+  getJobOutput(token, guid, function (streamBody) {
+    runbookOutputs.output.append(streamBody)
+  })
+
+  getJobStreams(token, guid, function (streamBody) {
+    _.forEach(streamBody.value, function (streamObject) {
+        var streamId = streamObject.properties.jobStreamId
+        getJobStream(token, guid, streamId, function (streamJobObj) {
+          switch (streamJobObj.properties.streamType) {
+            case 'Warning':
+              var streamText = streamJobObj.properties.streamText
+              streamText = streamText.split('\r\n')
+              _.forEach(streamText, function (streamLine) {
+                runbookOutputs.warnings.appendLine(streamLine)
+              })
+              runbookOutputs.warnings.show()
+              break
+            case 'Error':
+              var streamText = streamJobObj.properties.streamText
+              streamText = streamText.split('\r\n')
+              _.forEach(streamText, function (streamLine) {
+                runbookOutputs.errors.appendLine(streamLine)
+              })
+              runbookOutputs.errors.show()
+              break
+            default:
+              break
+          }
+        })
+    })
+  })
 }
 
 /**
@@ -77,7 +75,7 @@ var showJobOutput = function (token, guid, runbookOutputs, lastStreamNumber = 0)
  * @param {*} guid
  * @param {*} next
  */
- function getJobStream (token, guid, jobStreamId, next) {
+function getJobStream(token, guid, jobStreamId, next) {
   var request = require('request')
   var vscode = require('vscode')
   var azureconfig = vscode.workspace.getConfiguration("azureautomation")
@@ -89,8 +87,11 @@ var showJobOutput = function (token, guid, runbookOutputs, lastStreamNumber = 0)
     }
   }, function (error, response, body) {
     // console.log('Body of jobstreams: ' + body)
-
-    return next(JSON.parse(body))
+    if (error) {
+      console.log(error);
+    } else {
+      return next(JSON.parse(body))
+    }
   })
 }
 
@@ -100,7 +101,34 @@ var showJobOutput = function (token, guid, runbookOutputs, lastStreamNumber = 0)
  * @param {*} guid
  * @param {*} next
  */
-function getJobStreams (token, guid, next) {
+ function getJobOutput(token, guid, next) {
+  var request = require('request')
+  var vscode = require('vscode')
+  var azureconfig = vscode.workspace.getConfiguration("azureautomation")
+
+  request.get({
+    url: `https://management.azure.com/subscriptions/${azureconfig.subscriptionId}/resourceGroups/${azureconfig.resourceGroup}/providers/Microsoft.Automation/automationAccounts/${azureconfig.automationAccount}/jobs/${guid}/output?api-version=2017-05-15-preview`,
+    headers: {
+      'Authorization': token
+    }
+  }, function (error, response, body) {
+    if(error) {
+      console.log(error)
+    } else {
+      //console.log(body)
+      //return next(JSON.parse(body))
+      return next(body)
+    }
+  })
+}
+
+/**
+ *
+ * @param {*} token
+ * @param {*} guid
+ * @param {*} next
+ */
+function getJobStreams(token, guid, next) {
   var request = require('request')
   var vscode = require('vscode')
   var azureconfig = vscode.workspace.getConfiguration("azureautomation")
@@ -111,9 +139,13 @@ function getJobStreams (token, guid, next) {
       'Authorization': token
     }
   }, function (error, response, body) {
-    // console.log('Body of jobstreams: ' + body)
-
-    return next(JSON.parse(body))
+    if(error) {
+      console.log(error)
+    } else {
+      //console.log(body)
+      return next(JSON.parse(body))
+      //return next(body)
+    }
   })
 }
 
@@ -123,7 +155,7 @@ function getJobStreams (token, guid, next) {
  * @param {*} guid
  * @param {*} next
  */
-function getJobInfo (token, guid, next) {
+function getJobInfo(token, guid, next) {
   var request = require('request')
   var vscode = require('vscode')
   var azureconfig = vscode.workspace.getConfiguration("azureautomation")
@@ -134,8 +166,7 @@ function getJobInfo (token, guid, next) {
       'Authorization': token
     }
   }, function (error, response, body) {
-    if (error || response.statusCode != 200 && response.statusCode != 201 && response.statusCode != 202) {
-    }
+    if (error || response.statusCode != 200 && response.statusCode != 201 && response.statusCode != 202) {}
     if (response.statusCode === 200) {
       body = JSON.parse(body)
       if (body.properties.status === 'Running') {

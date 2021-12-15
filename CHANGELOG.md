@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to the "azureautomation" extension will be documented in this file.
 
+## [1.0.14] - 2021-12-15
+### Fixed
+ - Fixed the output channel for PS7 runbooks.
+
 ## [1.0.11] - 2021-11-25
 ### Removed
  - Removed the option to manualle override API version. This has caused some API call to fail.

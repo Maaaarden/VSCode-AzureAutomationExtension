@@ -162,6 +162,7 @@ const selectAssetCredential = function () {
 }
 
 const startPublishedRunbook = function () {
+  try {
   Azure.getOauthToken(function (token) {
     Azure.startPublishedRunbook(token.value, function (guid) {
       runbookOutputs.output.clear()
@@ -173,6 +174,9 @@ const startPublishedRunbook = function () {
       AzureJobs.showJobOutput(token.value, guid, runbookOutputs)
     })
   })
+} catch(e) {
+  console.log
+}
 }
 
 module.exports = {
